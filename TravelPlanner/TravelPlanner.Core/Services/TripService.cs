@@ -32,13 +32,27 @@ public class TripService
         _repository.Update(trip);
     }
 
-    // NEW: expose locations to the UI as summaries (includes Id for selection)
+    // expose locations to the UI as summaries (includes Id for selection)
     public IReadOnlyList<LocationSummary> GetLocations()
     {
         var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
 
         return trip.Locations
             .Select(l => new LocationSummary(l.Id, l.Name, l.Country, l.TotalSpent()))
+            .ToList();
+    }
+
+    public IReadOnlyList<TripSummary> GetTrips()
+    {
+        return _repository.GetAll()
+            .Select(t => new TripSummary(
+                t.Id,
+                t.Name,
+                t.TotalBudget,
+                t.TotalSpent(),
+                t.RemainingBudget(),
+                t.Locations.Count
+            ))
             .ToList();
     }
 
