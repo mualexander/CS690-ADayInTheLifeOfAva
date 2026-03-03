@@ -1,1 +1,5 @@
-<Solution />
+<Solution>
+  <Project Path="TravelPlanner.Console/TravelPlanner.Console.csproj" />
+  <Project Path="TravelPlanner.Core.Tests/TravelPlanner.Core.Tests.csproj" />
+  <Project Path="TravelPlanner.Core/TravelPlanner.Core.csproj" />
+</Solution>
