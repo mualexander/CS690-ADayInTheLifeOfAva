@@ -9,16 +9,18 @@ public class Trip
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public decimal TotalBudget { get; private set; }
-
-    private readonly List<Location> _locations = new();
-    public IReadOnlyCollection<Location> Locations => _locations.AsReadOnly();
-
     public DateTime CreatedAt { get; private set; }
+
+    private readonly List<Stay> _stays = new();
+    public IReadOnlyCollection<Stay> Stays => _stays.AsReadOnly();
 
     public Trip(string name, decimal totalBudget)
     {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Trip name cannot be empty.", nameof(name));
+        if (totalBudget < 0) throw new ArgumentException("Budget cannot be negative.", nameof(totalBudget));
+
         Id = Guid.NewGuid();
-        Name = name;
+        Name = name.Trim();
         TotalBudget = totalBudget;
         CreatedAt = DateTime.UtcNow;
     }
@@ -28,35 +30,33 @@ public class Trip
         if (string.IsNullOrWhiteSpace(newName))
             throw new ArgumentException("Trip name cannot be empty.");
 
-        Name = newName;
+        Name = newName.Trim();
     }
 
     public void UpdateBudget(decimal newBudget)
     {
-        if (newBudget < 0)
-            throw new ArgumentException("Budget cannot be negative.");
-
+        if (newBudget < 0) throw new ArgumentException("Budget cannot be negative.");
         TotalBudget = newBudget;
     }
 
-    public void AddLocation(Location location)
+    // Route A: no uniqueness constraints. Add as many Tokyo stays as you want.
+    public Stay AddStay(Place place, DateTime? start = null, DateTime? end = null)
     {
-        if (_locations.Any(l => l.Name == location.Name))
-            throw new InvalidOperationException("Location already exists.");
+        var stay = (start.HasValue && end.HasValue)
+            ? new Stay(place, start.Value, end.Value)
+            : new Stay(place);
 
-        _locations.Add(location);
+        _stays.Add(stay);
+        return stay;
     }
 
-    public void RemoveLocation(Guid locationId)
+    public void RemoveStay(Guid stayId)
     {
-        var location = _locations.FirstOrDefault(l => l.Id == locationId);
-        if (location == null)
-            throw new InvalidOperationException("Location not found.");
-
-        _locations.Remove(location);
+        var stay = _stays.FirstOrDefault(s => s.Id == stayId);
+        if (stay == null) throw new InvalidOperationException("Stay not found.");
+        _stays.Remove(stay);
     }
 
-    public decimal TotalSpent() => Locations.Sum(l => l.TotalSpent());
-
+    public decimal TotalSpent() => _stays.Sum(s => s.TotalSpent());
     public decimal RemainingBudget() => TotalBudget - TotalSpent();
 }

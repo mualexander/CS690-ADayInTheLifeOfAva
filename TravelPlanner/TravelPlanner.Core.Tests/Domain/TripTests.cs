@@ -8,6 +8,19 @@ namespace TravelPlanner.Core.Tests.Domain;
 public class TripTests
 {
     [Fact]
+    public void Constructor_RejectsBlankName()
+    {
+        Assert.Throws<ArgumentException>(() => new Trip("", 1000m));
+        Assert.Throws<ArgumentException>(() => new Trip("   ", 1000m));
+    }
+
+    [Fact]
+    public void Constructor_RejectsNegativeBudget()
+    {
+        Assert.Throws<ArgumentException>(() => new Trip("Japan", -1m));
+    }
+
+    [Fact]
     public void Rename_RejectsBlank()
     {
         var trip = new Trip("Japan", 1000m);
@@ -23,37 +36,49 @@ public class TripTests
     }
 
     [Fact]
-    public void AddLocation_RejectsDuplicateByName()
+    public void AddStay_AllowsMultipleStaysInSamePlace()
     {
         var trip = new Trip("Japan", 1000m);
-        trip.AddLocation(new Location("Tokyo", "Japan"));
+        var tokyo = new Place("Tokyo", "Japan");
 
-        Assert.Throws<InvalidOperationException>(() =>
-            trip.AddLocation(new Location("Tokyo", "Japan")));
+        trip.AddStay(tokyo, new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+        trip.AddStay(tokyo, new DateTime(2026, 1, 16), new DateTime(2026, 1, 20));
+
+        Assert.Equal(2, trip.Stays.Count);
+        Assert.All(trip.Stays, s => Assert.Equal("Tokyo", s.Place.City));
     }
 
     [Fact]
-    public void RemoveLocation_ThrowsWhenMissing()
+    public void RemoveStay_ThrowsWhenMissing()
     {
         var trip = new Trip("Japan", 1000m);
-        Assert.Throws<InvalidOperationException>(() => trip.RemoveLocation(Guid.NewGuid()));
+        Assert.Throws<InvalidOperationException>(() => trip.RemoveStay(Guid.NewGuid()));
     }
 
     [Fact]
-    public void TripTotals_RollUpAcrossLocations()
+    public void TripTotals_RollUpAcrossStays()
     {
         var trip = new Trip("Japan", 1000m);
 
-        var tokyo = new Location("Tokyo", "Japan");
-        tokyo.AddExpense(DateTime.UtcNow.Date, 100m, ExpenseCategory.Food);
+        var tokyoStay = trip.AddStay(new Place("Tokyo", "Japan"));
+        tokyoStay.AddExpense(DateTime.UtcNow.Date, 100m, ExpenseCategory.Food);
 
-        var osaka = new Location("Osaka", "Japan");
-        osaka.AddExpense(DateTime.UtcNow.Date, 50m, ExpenseCategory.Activities);
-
-        trip.AddLocation(tokyo);
-        trip.AddLocation(osaka);
+        var osakaStay = trip.AddStay(new Place("Osaka", "Japan"));
+        osakaStay.AddExpense(DateTime.UtcNow.Date, 50m, ExpenseCategory.Activities);
 
         Assert.Equal(150m, trip.TotalSpent());
         Assert.Equal(850m, trip.RemainingBudget());
+    }
+
+    [Fact]
+    public void RemainingBudget_CanGoNegativeWhenOverspent()
+    {
+        var trip = new Trip("Japan", 100m);
+
+        var stay = trip.AddStay(new Place("Tokyo", "Japan"));
+        stay.AddExpense(DateTime.UtcNow.Date, 150m, ExpenseCategory.Food);
+
+        Assert.Equal(150m, trip.TotalSpent());
+        Assert.Equal(-50m, trip.RemainingBudget());
     }
 }

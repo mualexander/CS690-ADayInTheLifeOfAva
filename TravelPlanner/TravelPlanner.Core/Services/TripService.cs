@@ -25,21 +25,41 @@ public class TripService
 
     public void SelectTrip(Guid tripId) => _context.SetActiveTrip(tripId);
 
-    public void AddLocation(string name, string country)
+    public void AddStay(string city, string country, DateTime? start = null, DateTime? end = null)
     {
         var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
-        trip.AddLocation(new Location(name, country));
+
+        var place = new Place(city, country);
+        trip.AddStay(place, start, end);
+
         _repository.Update(trip);
     }
 
-    // expose locations to the UI as summaries (includes Id for selection)
-    public IReadOnlyList<LocationSummary> GetLocations()
+    public IReadOnlyList<StaySummary> GetStays()
     {
         var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
 
-        return trip.Locations
-            .Select(l => new LocationSummary(l.Id, l.Name, l.Country, l.TotalSpent()))
+        return trip.Stays
+            .Select(s => new StaySummary(
+                s.Id,
+                s.Place.City,
+                s.Place.Country,
+                s.StartDate,
+                s.EndDate,
+                s.TotalSpent()
+            ))
             .ToList();
+    }
+
+    public void AddExpenseToStay(Guid stayId, DateTime date, decimal amount, ExpenseCategory category, string? note = null)
+    {
+        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        stay.AddExpense(date, amount, category, note);
+        _repository.Update(trip);
     }
 
     public IReadOnlyList<TripSummary> GetTrips()
@@ -51,21 +71,9 @@ public class TripService
                 t.TotalBudget,
                 t.TotalSpent(),
                 t.RemainingBudget(),
-                t.Locations.Count
+                t.Stays.Count
             ))
             .ToList();
-    }
-
-    // NEW: add expense by locationId chosen from GetLocations()
-    public void AddExpenseToLocation(Guid locationId, DateTime date, decimal amount, ExpenseCategory category, string? note = null)
-    {
-        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
-
-        var location = trip.Locations.FirstOrDefault(l => l.Id == locationId)
-            ?? throw new InvalidOperationException("Location not found.");
-
-        location.AddExpense(date, amount, category, note);
-        _repository.Update(trip);
     }
 
     public decimal GetTripTotalSpent()
