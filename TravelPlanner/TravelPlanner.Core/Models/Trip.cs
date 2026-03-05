@@ -50,6 +50,17 @@ public class Trip
         return stay;
     }
 
+    // Also allow for an add with a city and country
+    public Stay AddStay(string city, string country, DateTime? start = null, DateTime? end = null)
+    {
+        var place = new Place(city, country);
+
+        if (start.HasValue && end.HasValue)
+            return AddStay(place, start.Value, end.Value);
+
+        return AddStay(place);
+    }
+
     public void RemoveStay(Guid stayId)
     {
         var stay = _stays.FirstOrDefault(s => s.Id == stayId);

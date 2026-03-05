@@ -97,6 +97,23 @@ public class TripServiceTests
     }
 
     [Fact]
+    public void GetStays_IncludesDisplayKey()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+
+        svc.AddStay("Tokyo", "Japan", new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        var stays = svc.GetStays();
+        Assert.Single(stays);
+        Assert.Equal("Tokyo, Japan (2026-01-10..2026-01-14)", stays[0].DisplayKey);
+    }
+
+    [Fact]
     public void AddExpenseToStay_ThrowsIfNoActiveTrip()
     {
         var repo = new InMemoryTripRepository();
@@ -194,5 +211,23 @@ public class TripServiceTests
 
         Assert.Single(tripB.Stays);
         Assert.Equal("Osaka", tripB.Stays.Single().Place.City);
+    }
+
+    [Fact]
+    public void GetStays_ReturnsDisplayKey()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+
+        svc.AddStay("Tokyo", "Japan", new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        var stays = svc.GetStays();
+
+        Assert.Single(stays);
+        Assert.Equal("Tokyo, Japan (2026-01-10..2026-01-14)", stays[0].DisplayKey);
     }
 }

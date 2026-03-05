@@ -42,6 +42,7 @@ public class TripService
         return trip.Stays
             .Select(s => new StaySummary(
                 s.Id,
+                s.DisplayKey,
                 s.Place.City,
                 s.Place.Country,
                 s.StartDate,

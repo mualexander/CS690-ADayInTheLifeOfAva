@@ -1,3 +1,5 @@
+using System;
+
 namespace TravelPlanner.Core.Models;
 
 public class Place
@@ -8,11 +10,19 @@ public class Place
 
     public Place(string city, string country)
     {
-        if (string.IsNullOrWhiteSpace(city)) throw new ArgumentException("City cannot be empty.", nameof(city));
-        if (string.IsNullOrWhiteSpace(country)) throw new ArgumentException("Country cannot be empty.", nameof(country));
+        if (string.IsNullOrWhiteSpace(city))
+            throw new ArgumentException("City cannot be empty.", nameof(city));
+        if (string.IsNullOrWhiteSpace(country))
+            throw new ArgumentException("Country cannot be empty.", nameof(country));
 
         Id = Guid.NewGuid();
-        City = city.Trim();
-        Country = country.Trim();
+        City = Normalize(city);
+        Country = Normalize(country);
     }
+
+    public string DisplayName => $"{City}, {Country}";
+
+    private static string Normalize(string s) => s.Trim();
+
+    public override string ToString() => DisplayName;
 }

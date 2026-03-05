@@ -58,12 +58,8 @@ if (stays.Count == 0)
 for (int i = 0; i < stays.Count; i++)
 {
     var s = stays[i];
-    var datePart =
-        (s.StartDate.HasValue && s.EndDate.HasValue)
-            ? $" ({s.StartDate:yyyy-MM-dd} → {s.EndDate:yyyy-MM-dd})"
-            : "";
 
-    Console.WriteLine($"{i + 1}. {s.City}, {s.Country}{datePart} | Spent {s.TotalSpent:0.00}");
+    Console.WriteLine($"{i + 1}. {s.DisplayKey} | Spent {s.TotalSpent:0.00}");
 }
 
 Console.Write("Select stay # to add a sample expense: ");
