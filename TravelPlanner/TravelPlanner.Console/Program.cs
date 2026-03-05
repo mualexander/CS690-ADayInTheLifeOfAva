@@ -32,7 +32,7 @@ while (true)
     Console.WriteLine("Q) Quit");
     Console.Write("Choice: ");
 
-    var choice = (Console.ReadLine() ?? "").Trim();
+    var choice = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
     Console.WriteLine();
 
     try
