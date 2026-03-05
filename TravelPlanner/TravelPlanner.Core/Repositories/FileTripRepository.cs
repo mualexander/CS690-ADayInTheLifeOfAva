@@ -86,6 +86,19 @@ public class FileTripRepository : ITripRepository
         if (!string.IsNullOrWhiteSpace(dir))
             Directory.CreateDirectory(dir);
 
-        File.WriteAllText(_filePath, json);
+        var tempPath = _filePath + ".tmp";
+
+        File.WriteAllText(tempPath, json);
+
+        if (File.Exists(_filePath))
+        {
+            // Replace existing file atomically when possible
+            File.Replace(tempPath, _filePath, destinationBackupFileName: null);
+        }
+        else
+        {
+            // First write: just move temp into place
+            File.Move(tempPath, _filePath);
+        }
     }
 }

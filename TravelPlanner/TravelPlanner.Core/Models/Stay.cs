@@ -6,7 +6,7 @@ namespace TravelPlanner.Core.Models;
 
 public class Stay
 {
-    public Guid Id { get; private set; }
+    public Guid Id { get; internal set; }
     public Place Place { get; private set; }
 
     public DateTime? StartDate { get; private set; }

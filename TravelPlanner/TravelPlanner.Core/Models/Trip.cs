@@ -6,10 +6,10 @@ namespace TravelPlanner.Core.Models;
 
 public class Trip
 {
-    public Guid Id { get; private set; }
+    public Guid Id { get; internal set; }
     public string Name { get; private set; }
     public decimal TotalBudget { get; private set; }
-    public DateTime CreatedAt { get; private set; }
+    public DateTime CreatedAt { get; internal set; }
 
     private readonly List<Stay> _stays = new();
     public IReadOnlyCollection<Stay> Stays => _stays.AsReadOnly();
