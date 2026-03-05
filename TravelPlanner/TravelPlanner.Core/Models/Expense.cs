@@ -2,7 +2,7 @@ namespace TravelPlanner.Core.Models;
 
 public class Expense
 {
-    public Guid Id { get; private set; }
+    public Guid Id { get; internal set; }
     public DateTime Date { get; private set; }
     public decimal Amount { get; private set; }
     public ExpenseCategory Category { get; private set; }
@@ -17,5 +17,12 @@ public class Expense
         Amount = amount;
         Category = category;
         Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+    }
+
+    internal static Expense Hydrate(Guid id, DateTime date, decimal amount, ExpenseCategory category, string? note)
+    {
+        var e = new Expense(date, amount, category, note);
+        e.Id = id;
+        return e;
     }
 }

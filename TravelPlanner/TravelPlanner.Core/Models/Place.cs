@@ -4,7 +4,7 @@ namespace TravelPlanner.Core.Models;
 
 public class Place
 {
-    public Guid Id { get; private set; }
+    public Guid Id { get; internal set; }
     public string City { get; private set; }
     public string Country { get; private set; }
 
@@ -25,4 +25,11 @@ public class Place
     private static string Normalize(string s) => s.Trim();
 
     public override string ToString() => DisplayName;
+
+    internal static Place Hydrate(Guid id, string city, string country)
+    {
+        var place = new Place(city, country);
+        place.Id = id;
+        return place;
+    }
 }

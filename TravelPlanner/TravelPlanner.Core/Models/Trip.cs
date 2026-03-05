@@ -70,4 +70,17 @@ public class Trip
 
     public decimal TotalSpent() => _stays.Sum(s => s.TotalSpent());
     public decimal RemainingBudget() => TotalBudget - TotalSpent();
+
+    internal static Trip Hydrate(Guid id, string name, decimal totalBudget, DateTime createdAt)
+    {
+        var trip = new Trip(name, totalBudget);
+        trip.Id = id;
+        trip.CreatedAt = createdAt;
+        return trip;
+    }
+
+    internal void HydrateAddStay(Stay stay)
+    {
+        _stays.Add(stay);
+    }
 }

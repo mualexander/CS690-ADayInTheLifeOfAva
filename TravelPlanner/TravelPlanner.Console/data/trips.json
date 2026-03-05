@@ -1,0 +1,18 @@
+[
+  {
+    "Id": "6ea5db94-0da5-48ae-bd29-bb97e4431028",
+    "Name": "Japan 2027",
+    "TotalBudget": 8000,
+    "CreatedAt": "2026-03-05T05:02:07.2786211Z",
+    "Stays": [
+      {
+        "Id": "a45ba746-92e0-4981-b19e-d82340d35fa7",
+        "City": "Tokyo",
+        "Country": "Japan",
+        "StartDate": "2027-01-12T00:00:00",
+        "EndDate": "2027-01-17T00:00:00",
+        "Expenses": []
+      }
+    ]
+  }
+]

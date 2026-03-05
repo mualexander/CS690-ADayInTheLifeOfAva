@@ -114,4 +114,19 @@ public class Stay
 
     public override string ToString() => DisplayKey;
 
+    internal static Stay Hydrate(Guid id, Place place, DateTime? start, DateTime? end)
+    {
+        var stay = new Stay(place);
+        stay.Id = id;
+
+        if (start.HasValue && end.HasValue)
+            stay.SetDates(start.Value, end.Value);
+
+        return stay;
+    }
+
+    internal void HydrateAddExpense(Expense expense)
+    {
+        _expenses.Add(expense);
+    }
 }
