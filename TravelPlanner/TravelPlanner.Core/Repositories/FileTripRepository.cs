@@ -88,17 +88,21 @@ public class FileTripRepository : ITripRepository
 
         var tempPath = _filePath + ".tmp";
 
-        File.WriteAllText(tempPath, json);
+        try
+        {
+            File.WriteAllText(tempPath, json);
 
-        if (File.Exists(_filePath))
-        {
-            // Replace existing file atomically when possible
-            File.Replace(tempPath, _filePath, destinationBackupFileName: null);
+            if (File.Exists(_filePath))
+                // Replace existing file atomically when possible
+                File.Replace(tempPath, _filePath, destinationBackupFileName: null);
+            else
+                // First write: just move temp into place
+                File.Move(tempPath, _filePath);
         }
-        else
+        finally
         {
-            // First write: just move temp into place
-            File.Move(tempPath, _filePath);
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
         }
     }
 }
