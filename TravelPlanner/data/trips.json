@@ -1,0 +1,18 @@
+[
+  {
+    "Id": "3e0a5f94-b254-481a-9e5c-f17292cd4dcb",
+    "Name": "Japan 2027",
+    "TotalBudget": 5000,
+    "CreatedAt": "2026-03-05T23:05:55.4280641Z",
+    "Stays": [
+      {
+        "Id": "724f8654-d001-4665-a8cc-e7a7bec7e443",
+        "City": "Hiroshima",
+        "Country": "Japan",
+        "StartDate": null,
+        "EndDate": null,
+        "Expenses": []
+      }
+    ]
+  }
+]

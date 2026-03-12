@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
+using TravelPlanner.Console.Commands;
+using TravelPlanner.Console.Parsers;
+using TravelPlanner.ConsoleApp;
 using TravelPlanner.Core.Models;
 using TravelPlanner.Core.Repositories;
 using TravelPlanner.Core.Services;
@@ -10,93 +14,153 @@ var repo = new FileTripRepository(DataPath);
 var ctx = new InMemoryTripContext(repo);
 var svc = new TripService(repo, ctx);
 
-Console.WriteLine($"TravelPlanner (data: {DataPath})");
-Console.WriteLine();
+var mode = AppMode.MainMenu;
+StaySummary? activeStay = null;
+
+MenuRenderer.ShowMessage($"TravelPlanner (data: {DataPath})");
+MenuRenderer.BlankLine();
 
 while (true)
 {
-    var active = ctx.ActiveTrip;
-    Console.WriteLine(active is null
-        ? "Active trip: (none)"
-        : $"Active trip: {active.Name} | Spent {svc.GetTripTotalSpent():0.00} | Left {svc.GetTripRemainingBudget():0.00}");
-
-    Console.WriteLine();
-    Console.WriteLine("Menu:");
-    Console.WriteLine("L) List trips");
-    Console.WriteLine("A) Add trip");
-    Console.WriteLine("S) Select trip");
-    Console.WriteLine("1) List stays (active trip)");
-    Console.WriteLine("2) Add stay (active trip)");
-    Console.WriteLine("3) Add expense to stay (active trip)");
-    Console.WriteLine("0) Seed demo data (optional)");
-    Console.WriteLine("Q) Quit");
-    Console.Write("Choice: ");
-
-    var choice = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
-    Console.WriteLine();
-
     try
     {
-        switch (choice)
+        MenuRenderer.ShowHeader(ctx.ActiveTrip, activeStay);
+
+        switch (mode)
         {
-            case "L":
-                ListTrips(svc);
+            case AppMode.MainMenu:
+                mode = HandleMainMenu(svc, ctx);
+                if (mode != AppMode.StayMenu)
+                    activeStay = null;
                 break;
 
-            case "A":
-                CreateTrip(svc);
+            case AppMode.TripMenu:
+                mode = HandleTripMenu(svc, ctx, ref activeStay);
                 break;
 
-            case "S":
-                SelectTrip(svc);
+            case AppMode.StayMenu:
+                mode = HandleStayMenu(svc, ref activeStay);
                 break;
-
-            case "1":
-                ListStays(svc);
-                break;
-
-            case "2":
-                AddStay(svc);
-                break;
-
-            case "3":
-                AddExpense(svc);
-                break;
-
-            case "0":
-                SeedDemoData(svc);
-                break;
-
-            case "Q":
-                Console.WriteLine("Bye.");
-                return;
 
             default:
-                Console.WriteLine("Unknown choice.");
+                MenuRenderer.ShowError("Unknown application mode.");
+                mode = AppMode.MainMenu;
+                activeStay = null;
                 break;
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"ERROR: {ex.Message}");
+        MenuRenderer.ShowError(ex.Message);
     }
 
-    Console.WriteLine();
+    MenuRenderer.BlankLine();
 }
 
-static void ListTrips(TripService svc)
+static AppMode HandleMainMenu(TripService svc, InMemoryTripContext ctx)
 {
-    var trips = svc.GetTrips();
-    if (trips.Count == 0)
+    MenuRenderer.ShowMainMenu();
+    var command = MainMenuParser.Parse(Console.ReadLine());
+    MenuRenderer.BlankLine();
+
+    switch (command)
     {
-        Console.WriteLine("(no trips yet)");
-        return;
+        case MainMenuCommand.ListTrips:
+            MenuRenderer.ShowTrips(svc.GetTrips());
+            return AppMode.MainMenu;
+
+        case MainMenuCommand.CreateTrip:
+            CreateTrip(svc);
+            return AppMode.TripMenu;
+
+        case MainMenuCommand.SelectTrip:
+            SelectTrip(svc);
+            return AppMode.TripMenu;
+
+        case MainMenuCommand.SeedTestData:
+            SeedDemoData(svc);
+            return AppMode.TripMenu;
+
+        case MainMenuCommand.Quit:
+            MenuRenderer.ShowMessage("Bye.");
+            Environment.Exit(0);
+            return AppMode.MainMenu;
+
+        case MainMenuCommand.Unknown:
+        default:
+            MenuRenderer.ShowMessage("Unknown choice.");
+            return AppMode.MainMenu;
+    }
+}
+
+static AppMode HandleTripMenu(TripService svc, InMemoryTripContext ctx, ref StaySummary? activeStay)
+{
+    if (ctx.ActiveTrip is null)
+    {
+        MenuRenderer.ShowMessage("No active trip selected.");
+        return AppMode.MainMenu;
     }
 
-    for (int i = 0; i < trips.Count; i++)
+    MenuRenderer.ShowTripMenu();
+    var command = TripMenuParser.Parse(Console.ReadLine());
+    MenuRenderer.BlankLine();
+
+    switch (command)
     {
-        var t = trips[i];
-        Console.WriteLine($"{i + 1}. {t.Name} | Budget {t.TotalBudget:0.00} | Spent {t.TotalSpent:0.00} | Left {t.RemainingBudget:0.00} | Stays {t.StayCount}");
+        case TripMenuCommand.ListStays:
+            MenuRenderer.ShowStays(svc.GetStays());
+            return AppMode.TripMenu;
+
+        case TripMenuCommand.AddStay:
+            AddStay(svc);
+            return AppMode.TripMenu;
+
+        case TripMenuCommand.SelectStay:
+            activeStay = SelectStay(svc);
+            return activeStay is null ? AppMode.TripMenu : AppMode.StayMenu;
+
+        case TripMenuCommand.Back:
+            activeStay = null;
+            return AppMode.MainMenu;
+
+        case TripMenuCommand.Unknown:
+        default:
+            MenuRenderer.ShowMessage("Unknown choice.");
+            return AppMode.TripMenu;
+    }
+}
+
+static AppMode HandleStayMenu(TripService svc, ref StaySummary? activeStay)
+{
+    if (activeStay is null)
+    {
+        MenuRenderer.ShowMessage("No active stay selected.");
+        return AppMode.TripMenu;
+    }
+
+    MenuRenderer.ShowStayMenu();
+    var command = StayMenuParser.Parse(Console.ReadLine());
+    MenuRenderer.BlankLine();
+
+    switch (command)
+    {
+        case StayMenuCommand.ViewStayDetails:
+            MenuRenderer.ShowStayDetails(activeStay);
+            return AppMode.StayMenu;
+
+        case StayMenuCommand.AddExpense:
+            AddExpenseToStay(svc, activeStay);
+            activeStay = RefreshActiveStay(svc, activeStay.Id);
+            return AppMode.StayMenu;
+
+        case StayMenuCommand.Back:
+            activeStay = null;
+            return AppMode.TripMenu;
+
+        case StayMenuCommand.Unknown:
+        default:
+            MenuRenderer.ShowMessage("Unknown choice.");
+            return AppMode.StayMenu;
     }
 }
 
@@ -114,7 +178,7 @@ static void CreateTrip(TripService svc)
     var trip = svc.CreateTrip(name, budget);
     svc.SelectTrip(trip.Id);
 
-    Console.WriteLine($"Created + selected trip: {trip.Name}");
+    MenuRenderer.ShowMessage($"Created + selected trip: {trip.Name}");
 }
 
 static void SelectTrip(TripService svc)
@@ -123,8 +187,7 @@ static void SelectTrip(TripService svc)
     if (trips.Count == 0)
         throw new InvalidOperationException("No trips to select.");
 
-    for (int i = 0; i < trips.Count; i++)
-        Console.WriteLine($"{i + 1}. {trips[i].Name}");
+    MenuRenderer.ShowTrips(trips);
 
     Console.Write("Select trip #: ");
     var s = (Console.ReadLine() ?? "").Trim();
@@ -133,23 +196,7 @@ static void SelectTrip(TripService svc)
         throw new ArgumentException("Invalid selection.");
 
     svc.SelectTrip(trips[idx - 1].Id);
-    Console.WriteLine($"Selected trip: {trips[idx - 1].Name}");
-}
-
-static void ListStays(TripService svc)
-{
-    var stays = svc.GetStays();
-    if (stays.Count == 0)
-    {
-        Console.WriteLine("(no stays yet)");
-        return;
-    }
-
-    for (int i = 0; i < stays.Count; i++)
-    {
-        var s = stays[i];
-        Console.WriteLine($"{i + 1}. {s.DisplayKey} | Spent {s.TotalSpent:0.00}");
-    }
+    MenuRenderer.ShowMessage($"Selected trip: {trips[idx - 1].Name}");
 }
 
 static void AddStay(TripService svc)
@@ -173,25 +220,30 @@ static void AddStay(TripService svc)
         throw new ArgumentException("Either provide both start and end date, or neither.");
 
     svc.AddStay(city, country, start, end);
-    Console.WriteLine("Stay added.");
+    MenuRenderer.ShowMessage("Stay added.");
 }
 
-static void AddExpense(TripService svc)
+static StaySummary? SelectStay(TripService svc)
 {
     var stays = svc.GetStays();
     if (stays.Count == 0)
         throw new InvalidOperationException("No stays found. Add a stay first.");
 
-    for (int i = 0; i < stays.Count; i++)
-        Console.WriteLine($"{i + 1}. {stays[i].DisplayKey}");
+    MenuRenderer.ShowStays(stays);
 
     Console.Write("Select stay #: ");
-    var selStr = (Console.ReadLine() ?? "").Trim();
-    if (!int.TryParse(selStr, out var idx) || idx < 1 || idx > stays.Count)
+    var input = (Console.ReadLine() ?? "").Trim();
+
+    if (!int.TryParse(input, out var idx) || idx < 1 || idx > stays.Count)
         throw new ArgumentException("Invalid selection.");
 
-    var stayId = stays[idx - 1].Id;
+    var selected = stays[idx - 1];
+    MenuRenderer.ShowMessage($"Selected stay: {selected.DisplayKey}");
+    return selected;
+}
 
+static void AddExpenseToStay(TripService svc, StaySummary activeStay)
+{
     Console.Write("Expense date (YYYY-MM-DD) [blank=today]: ");
     var dateStr = (Console.ReadLine() ?? "").Trim();
     var date = string.IsNullOrWhiteSpace(dateStr) ? DateTime.UtcNow.Date : ParseDate(dateStr);
@@ -214,13 +266,17 @@ static void AddExpense(TripService svc)
     Console.Write("Note (optional): ");
     var note = Console.ReadLine();
 
-    svc.AddExpenseToStay(stayId, date, amount, category, note);
-    Console.WriteLine("Expense added.");
+    svc.AddExpenseToStay(activeStay.Id, date, amount, category, note);
+    MenuRenderer.ShowMessage("Expense added.");
+}
+
+static StaySummary? RefreshActiveStay(TripService svc, Guid stayId)
+{
+    return svc.GetStays().FirstOrDefault(s => s.Id == stayId);
 }
 
 static void SeedDemoData(TripService svc)
 {
-    // Explicit. Only runs if user chooses it.
     var trip = svc.CreateTrip("Seed: Japan 2026", 5000m);
     svc.SelectTrip(trip.Id);
 
@@ -232,7 +288,7 @@ static void SeedDemoData(TripService svc)
     if (stays.Count > 0)
         svc.AddExpenseToStay(stays[0].Id, DateTime.UtcNow.Date, 180m, ExpenseCategory.Food, "Sushi + ramen");
 
-    Console.WriteLine("Seeded demo trip.");
+    MenuRenderer.ShowMessage("Seeded demo trip.");
 }
 
 static DateTime ParseDate(string s)
