@@ -19,6 +19,11 @@ public class TripService
     public Trip CreateTrip(string name, decimal budget)
     {
         var trip = new Trip(name, budget);
+
+        if (_repository.GetAll().Any(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException("Trip with that name already exists.");
+        }
         _repository.Add(trip);
         return trip;
     }
@@ -65,7 +70,7 @@ public class TripService
 
     public IReadOnlyList<TripSummary> GetTrips()
     {
-        return _repository.GetAll()
+        return _repository.GetAll().Where(t => !t.IsArchived)
             .Select(t => new TripSummary(
                 t.Id,
                 t.Name,
@@ -87,5 +92,18 @@ public class TripService
     {
         var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
         return trip.RemainingBudget();
+    }
+
+    public void ArchiveActiveTrip()
+    {
+        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
+
+        trip.Archive();
+        _repository.Update(trip);
+    }
+
+    public void DeleteTrip(Guid tripId)
+    {
+        _repository.Delete(tripId);
     }
 }

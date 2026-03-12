@@ -10,6 +10,8 @@ public class Trip
     public string Name { get; private set; }
     public decimal TotalBudget { get; private set; }
     public DateTime CreatedAt { get; internal set; }
+    public bool IsArchived { get; private set; }
+
 
     private readonly List<Stay> _stays = new();
     public IReadOnlyCollection<Stay> Stays => _stays.AsReadOnly();
@@ -27,6 +29,8 @@ public class Trip
 
     public void Rename(string newName)
     {
+        EnsureNotArchived();
+        
         if (string.IsNullOrWhiteSpace(newName))
             throw new ArgumentException("Trip name cannot be empty.");
 
@@ -35,6 +39,8 @@ public class Trip
 
     public void UpdateBudget(decimal newBudget)
     {
+        EnsureNotArchived();
+        
         if (newBudget < 0) throw new ArgumentException("Budget cannot be negative.");
         TotalBudget = newBudget;
     }
@@ -42,6 +48,8 @@ public class Trip
     // Route A: no uniqueness constraints. Add as many Tokyo stays as you want.
     public Stay AddStay(Place place, DateTime? start = null, DateTime? end = null)
     {
+        EnsureNotArchived();
+        
         var stay = (start.HasValue && end.HasValue)
             ? new Stay(place, start.Value, end.Value)
             : new Stay(place);
@@ -53,6 +61,8 @@ public class Trip
     // Also allow for an add with a city and country
     public Stay AddStay(string city, string country, DateTime? start = null, DateTime? end = null)
     {
+        EnsureNotArchived();
+
         var place = new Place(city, country);
 
         if (start.HasValue && end.HasValue)
@@ -63,6 +73,8 @@ public class Trip
 
     public void RemoveStay(Guid stayId)
     {
+        EnsureNotArchived();
+        
         var stay = _stays.FirstOrDefault(s => s.Id == stayId);
         if (stay == null) throw new InvalidOperationException("Stay not found.");
         _stays.Remove(stay);
@@ -82,5 +94,16 @@ public class Trip
     internal void HydrateAddStay(Stay stay)
     {
         _stays.Add(stay);
+    }
+
+    public void Archive()
+    {
+        IsArchived = true;
+    }
+
+    private void EnsureNotArchived()
+    {
+        if (IsArchived)
+            throw new InvalidOperationException("Archived trips cannot be modified.");
     }
 }

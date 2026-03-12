@@ -230,4 +230,50 @@ public class TripServiceTests
         Assert.Single(stays);
         Assert.Equal("Tokyo, Japan (2026-01-10..2026-01-14)", stays[0].DisplayKey);
     }
+
+    [Fact]
+    public void ArchiveActiveTrip_ThrowsWhenNoActiveTrip()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        Assert.Throws<InvalidOperationException>(() => svc.ArchiveActiveTrip());
+    }
+
+    [Fact]
+    public void ArchiveActiveTrip_SetsTripArchived()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+
+        svc.ArchiveActiveTrip();
+
+        var updated = repo.GetById(trip.Id);
+        Assert.NotNull(updated);
+        Assert.True(updated!.IsArchived);
+    }
+
+    [Fact]
+    public void GetTrips_DoesNotReturnArchivedTrips()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var activeTrip = svc.CreateTrip("Japan 2026", 5000m);
+        var archivedTrip = svc.CreateTrip("Austin Weekend", 1200m);
+
+        svc.SelectTrip(archivedTrip.Id);
+        svc.ArchiveActiveTrip();
+
+        var trips = svc.GetTrips();
+
+        Assert.Contains(trips, t => t.Id == activeTrip.Id);
+        Assert.DoesNotContain(trips, t => t.Id == archivedTrip.Id);
+    }
 }
