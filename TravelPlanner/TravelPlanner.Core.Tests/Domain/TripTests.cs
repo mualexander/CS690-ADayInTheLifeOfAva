@@ -81,4 +81,53 @@ public class TripTests
         Assert.Equal(150m, trip.TotalSpent());
         Assert.Equal(-50m, trip.RemainingBudget());
     }
+
+    [Fact]
+    public void Archive_SetsIsArchivedToTrue()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+
+        trip.Archive();
+
+        Assert.True(trip.IsArchived);
+    }
+
+    [Fact]
+    public void Archive_CanBeCalledMoreThanOnce_AndRemainsArchived()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+
+        trip.Archive();
+        trip.Archive();
+
+        Assert.True(trip.IsArchived);
+    }
+
+    [Fact]
+    public void Rename_ThrowsWhenTripIsArchived()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        trip.Archive();
+
+        Assert.Throws<InvalidOperationException>(() => trip.Rename("Japan Spring 2026"));
+    }
+
+    [Fact]
+    public void UpdateBudget_ThrowsWhenTripIsArchived()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        trip.Archive();
+
+        Assert.Throws<InvalidOperationException>(() => trip.UpdateBudget(6000m));
+    }
+
+    [Fact]
+    public void AddStay_ThrowsWhenTripIsArchived()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        trip.Archive();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            trip.AddStay(new Place("Tokyo", "Japan")));
+    }
 }
