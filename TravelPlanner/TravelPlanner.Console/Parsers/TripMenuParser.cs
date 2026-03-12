@@ -1,4 +1,6 @@
-namespace TravelPlanner.ConsoleApp;
+using TravelPlanner.Console.Commands;
+
+namespace TravelPlanner.Console.Parsers;
 
 public static class TripMenuParser
 {

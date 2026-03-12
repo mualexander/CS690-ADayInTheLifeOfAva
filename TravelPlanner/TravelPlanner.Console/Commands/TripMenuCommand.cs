@@ -1,4 +1,4 @@
-namespace TravelPlanner.ConsoleApp;
+namespace TravelPlanner.Console.Commands;
 
 public enum TripMenuCommand
 {
