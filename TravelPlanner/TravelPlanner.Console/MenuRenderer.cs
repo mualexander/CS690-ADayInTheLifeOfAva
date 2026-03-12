@@ -39,8 +39,8 @@ public static class MenuRenderer
         System.Console.WriteLine("L) List trips");
         System.Console.WriteLine("C) Create trip");
         System.Console.WriteLine("S) Select trip");
-        System.Console.WriteLine("D) Seed demo data");
-        System.Console.WriteLine("X) Exit");
+        System.Console.WriteLine("T) Seed test data");
+        System.Console.WriteLine("Q) Quit");
         System.Console.Write("Choice: ");
     }
 
@@ -53,7 +53,8 @@ public static class MenuRenderer
         System.Console.WriteLine("S) Select stay");
         System.Console.WriteLine("R) Rename trip");
         System.Console.WriteLine("B) Update budget");
-        System.Console.WriteLine("X) Back");
+        System.Console.WriteLine("X) Archive trip");
+        System.Console.WriteLine("Q) Back");
         System.Console.Write("Choice: ");
     }
 
@@ -62,7 +63,12 @@ public static class MenuRenderer
         System.Console.WriteLine("Stay Menu");
         System.Console.WriteLine("V) View stay details");
         System.Console.WriteLine("A) Add expense");
-        System.Console.WriteLine("X) Back");
+        System.Console.WriteLine("R) Remove expense");
+        System.Console.WriteLine("P) Set place");
+        System.Console.WriteLine("I) Set start date");
+        System.Console.WriteLine("O) Set end data");
+        System.Console.WriteLine("X) Delete stay");
+        System.Console.WriteLine("Q) Back");
         System.Console.Write("Choice: ");
     }
 

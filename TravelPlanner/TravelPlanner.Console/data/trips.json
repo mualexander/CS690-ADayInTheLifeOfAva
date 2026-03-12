@@ -12,6 +12,14 @@
         "StartDate": "2027-01-12T00:00:00",
         "EndDate": "2027-01-17T00:00:00",
         "Expenses": []
+      },
+      {
+        "Id": "8bdc4ce7-2852-445a-b373-cf34dd4303fe",
+        "City": "Osaka",
+        "Country": "Japan",
+        "StartDate": "2027-01-17T00:00:00",
+        "EndDate": "2027-01-21T00:00:00",
+        "Expenses": []
       }
     ]
   }

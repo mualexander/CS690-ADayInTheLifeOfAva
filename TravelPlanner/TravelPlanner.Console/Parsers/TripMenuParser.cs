@@ -13,6 +13,7 @@ public static class TripMenuParser
             "v" or "view" => TripMenuCommand.ViewTripSummary,
             "l" or "list" => TripMenuCommand.ListStays,
             "a" or "add" => TripMenuCommand.AddStay,
+            "s" or "select" => TripMenuCommand.SelectStay,
             "r" or "rename" => TripMenuCommand.RenameTrip,
             "b" or "budget" => TripMenuCommand.UpdateBudget,
             "x" or "archive" => TripMenuCommand.ArchiveTrip,
