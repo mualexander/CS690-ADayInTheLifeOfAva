@@ -397,4 +397,179 @@ public class TripServiceTests
     }
 
     #endregion
+
+    #region Bookmark Tests
+    [Fact]
+    public void AddBookmarkToStay_AddsBookmark()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddBookmarkToStay(stayId, "Sushi Place", "https://example.com", "try omakase");
+
+        var bookmarks = svc.GetBookmarksForStay(stayId);
+        Assert.Single(bookmarks);
+        Assert.Equal("Sushi Place", bookmarks[0].Title);
+        Assert.Equal("https://example.com", bookmarks[0].Url);
+        Assert.Equal("try omakase", bookmarks[0].Notes);
+    }
+
+    [Fact]
+    public void UpdateBookmarkTitle_ChangesTitle()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+        svc.AddBookmarkToStay(stayId, "Old Title", "https://example.com");
+
+        var bookmarkId = svc.GetBookmarksForStay(stayId).Single().Id;
+
+        svc.UpdateBookmarkTitle(stayId, bookmarkId, "New Title");
+
+        var updated = svc.GetBookmarksForStay(stayId).Single();
+        Assert.Equal("New Title", updated.Title);
+    }
+
+    [Fact]
+    public void UpdateBookmarkUrl_ChangesUrl()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+        svc.AddBookmarkToStay(stayId, "Sushi Place", "https://old.example");
+
+        var bookmarkId = svc.GetBookmarksForStay(stayId).Single().Id;
+
+        svc.UpdateBookmarkUrl(stayId, bookmarkId, "https://new.example");
+
+        var updated = svc.GetBookmarksForStay(stayId).Single();
+        Assert.Equal("https://new.example", updated.Url);
+    }
+
+    [Fact]
+    public void UpdateBookmarkNotes_ChangesNotes()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+        svc.AddBookmarkToStay(stayId, "Sushi Place", "https://example.com", "old notes");
+
+        var bookmarkId = svc.GetBookmarksForStay(stayId).Single().Id;
+
+        svc.UpdateBookmarkNotes(stayId, bookmarkId, "new notes");
+
+        var updated = svc.GetBookmarksForStay(stayId).Single();
+        Assert.Equal("new notes", updated.Notes);
+    }
+
+    [Fact]
+    public void UpdateBookmarkNotes_CanClearNotes()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+        svc.AddBookmarkToStay(stayId, "Sushi Place", "https://example.com", "old notes");
+
+        var bookmarkId = svc.GetBookmarksForStay(stayId).Single().Id;
+
+        svc.UpdateBookmarkNotes(stayId, bookmarkId, "");
+
+        var updated = svc.GetBookmarksForStay(stayId).Single();
+        Assert.Null(updated.Notes);
+    }
+
+    [Fact]
+    public void DeleteBookmark_RemovesBookmark()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+        svc.AddBookmarkToStay(stayId, "Sushi Place", "https://example.com");
+
+        var bookmarkId = svc.GetBookmarksForStay(stayId).Single().Id;
+
+        svc.DeleteBookmark(stayId, bookmarkId);
+
+        Assert.Empty(svc.GetBookmarksForStay(stayId));
+    }
+
+    [Fact]
+    public void AddBookmarkToStay_ThrowsWhenNoActiveTrip()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            svc.AddBookmarkToStay(Guid.NewGuid(), "Sushi Place", "https://example.com"));
+    }
+
+    [Fact]
+    public void GetBookmarksForStay_ThrowsWhenStayNotFound()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            svc.GetBookmarksForStay(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void UpdateBookmarkTitle_ThrowsWhenBookmarkNotFound()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        Assert.Throws<InvalidOperationException>(() =>
+            svc.UpdateBookmarkTitle(stayId, Guid.NewGuid(), "New Title"));
+    }
+    #endregion
 }

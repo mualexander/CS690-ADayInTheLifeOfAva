@@ -4,5 +4,7 @@ public enum AppMode
 {
     MainMenu,
     TripMenu,
-    StayMenu
+    StayMenu,
+    BookmarkMenu,
+    BookmarkDetailMenu
 }

@@ -180,4 +180,52 @@ public class StayTests
 
         Assert.Equal("Osaka, Japan (2026-01-10..2026-01-15)", stay.DisplayKey);
     }
+
+    #region Bookmark Tests
+
+    [Fact]
+    public void AddBookmark_AddsBookmark()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+
+        var bookmark = stay.AddBookmark("Sushi Place", "https://example.com", "try omakase");
+
+        Assert.Single(stay.Bookmarks);
+        Assert.Equal("Sushi Place", bookmark.Title);
+        Assert.Equal("https://example.com", bookmark.Url);
+        Assert.Equal("try omakase", bookmark.Notes);
+    }
+
+    [Fact]
+    public void RemoveBookmark_RemovesExistingBookmark()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        var bookmark = stay.AddBookmark("Sushi Place", "https://example.com");
+
+        stay.RemoveBookmark(bookmark.Id);
+
+        Assert.Empty(stay.Bookmarks);
+    }
+
+    [Fact]
+    public void RemoveBookmark_ThrowsWhenBookmarkNotFound()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+
+        Assert.Throws<InvalidOperationException>(() => stay.RemoveBookmark(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void GetBookmark_ReturnsMatchingBookmark()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        var bookmark = stay.AddBookmark("Sushi Place", "https://example.com");
+
+        var found = stay.GetBookmark(bookmark.Id);
+
+        Assert.Equal(bookmark.Id, found.Id);
+        Assert.Equal("Sushi Place", found.Title);
+    }
+
+    #endregion
 }
