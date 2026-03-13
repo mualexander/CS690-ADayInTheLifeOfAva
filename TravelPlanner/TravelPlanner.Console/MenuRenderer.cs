@@ -80,7 +80,20 @@ public static class MenuRenderer
             "Bookmark Menu",
             ("L", "List bookmarks"),
             ("A", "Add bookmark"),
+            ("S", "Select bookmark"),
             ("D", "Delete bookmark"),
+            ("Q", "Back")
+        );
+    }
+
+    public static void ShowBookmarkDetailMenu()
+    {
+        ShowMenu(
+            "Bookmark Detail Menu",
+            ("V", "View bookmark details"),
+            ("R", "Rename bookmark"),
+            ("U", "Update URL"),
+            ("N", "Update notes"),
             ("Q", "Back")
         );
     }
@@ -145,6 +158,35 @@ public static class MenuRenderer
         }
     }
 
+    public static void ShowBookmarks(IReadOnlyList<BookmarkSummary> bookmarks)
+    {
+        WriteTitle("Bookmarks");
+
+        if (bookmarks.Count == 0)
+        {
+            WriteLine("(no bookmarks yet)");
+            return;
+        }
+
+        for (int i = 0; i < bookmarks.Count; i++)
+        {
+            var b = bookmarks[i];
+            WriteLine($"{i + 1}. {b.Title} | {b.Url}");
+            if (!string.IsNullOrWhiteSpace(b.Notes))
+            {
+                WriteLine($"   Notes: {b.Notes}");
+            }
+        }
+    }
+
+    public static void ShowBookmarkDetails(BookmarkSummary bookmark)
+    {
+        WriteTitle("Bookmark Details");
+        WriteLine($"Title:     {bookmark.Title}");
+        WriteLine($"URL:       {bookmark.Url}");
+        WriteLine($"CreatedAt: {bookmark.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
+        WriteLine($"Notes:     {bookmark.Notes ?? "(none)"}");
+    }
     public static void ShowError(string message)
     {
         WriteLine($"ERROR: {message}");

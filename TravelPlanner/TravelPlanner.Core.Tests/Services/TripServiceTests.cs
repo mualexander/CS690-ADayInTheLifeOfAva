@@ -488,6 +488,28 @@ public class TripServiceTests
     }
 
     [Fact]
+    public void UpdateBookmarkNotes_CanClearNotes()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+        svc.AddBookmarkToStay(stayId, "Sushi Place", "https://example.com", "old notes");
+
+        var bookmarkId = svc.GetBookmarksForStay(stayId).Single().Id;
+
+        svc.UpdateBookmarkNotes(stayId, bookmarkId, "");
+
+        var updated = svc.GetBookmarksForStay(stayId).Single();
+        Assert.Null(updated.Notes);
+    }
+
+    [Fact]
     public void DeleteBookmark_RemovesBookmark()
     {
         var repo = new InMemoryTripRepository();
