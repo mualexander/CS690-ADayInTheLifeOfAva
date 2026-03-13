@@ -300,11 +300,8 @@ public class TripService
         DateTime departTime,
         DateTime arriveTime)
     {
-        var trip = _context.ActiveTrip
-            ?? throw new InvalidOperationException("No active trip.");
-
-        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
-            ?? throw new InvalidOperationException("Stay not found.");
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
 
         stay.AddFlightOption(url, fromAirportCode, toAirportCode, departTime, arriveTime);
 
@@ -313,17 +310,15 @@ public class TripService
 
     public IReadOnlyList<FlightOptionSummary> GetFlightOptionsForStay(Guid stayId)
     {
-        var trip = _context.ActiveTrip
-            ?? throw new InvalidOperationException("No active trip.");
-
-        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
-            ?? throw new InvalidOperationException("Stay not found.");
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
 
         return stay.FlightOptions
             .OrderBy(f => f.DepartTime)
             .Select(f => new FlightOptionSummary(
                 f.Id,
                 f.Url,
+                f.CreatedAt,
                 f.LastCheckedAt,
                 f.IsSelected,
                 f.FromAirportCode,
@@ -336,11 +331,8 @@ public class TripService
 
     public void DeleteFlightOption(Guid stayId, Guid flightOptionId)
     {
-        var trip = _context.ActiveTrip
-            ?? throw new InvalidOperationException("No active trip.");
-
-        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
-            ?? throw new InvalidOperationException("Stay not found.");
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
 
         stay.RemoveFlightOption(flightOptionId);
 
