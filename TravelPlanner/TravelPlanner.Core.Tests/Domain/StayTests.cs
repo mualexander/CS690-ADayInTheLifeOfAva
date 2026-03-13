@@ -28,9 +28,9 @@ public class StayTests
     {
         var stay = new Stay(new Place("Tokyo", "Japan"));
 
-        stay.AddExpense(DateTime.UtcNow.Date, 10m, ExpenseCategory.Food);
-        stay.AddExpense(DateTime.UtcNow.Date, 25m, ExpenseCategory.Food);
-        stay.AddExpense(DateTime.UtcNow.Date, 40m, ExpenseCategory.Transportation);
+        stay.AddExpense("Meals", 10m, ExpenseCategory.Food);
+        stay.AddExpense("Snacks", 25m, ExpenseCategory.Food);
+        stay.AddExpense("Taxis", 40m, ExpenseCategory.Transportation);
 
         Assert.Equal(3, stay.Expenses.Count);
         Assert.Equal(75m, stay.TotalSpent());
@@ -42,7 +42,7 @@ public class StayTests
     public void RemoveExpense_RemovesExisting()
     {
         var stay = new Stay(new Place("Tokyo", "Japan"));
-        var e = stay.AddExpense(DateTime.UtcNow.Date, 10m, ExpenseCategory.Food);
+        var e = stay.AddExpense("Meals", 10m, ExpenseCategory.Food);
 
         stay.RemoveExpense(e.Id);
 

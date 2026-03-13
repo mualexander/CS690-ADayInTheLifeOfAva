@@ -12,6 +12,7 @@ public static class BookmarkDetailMenuParser
             "r" or "rename" => BookmarkDetailMenuCommand.Rename,
             "u" or "url" => BookmarkDetailMenuCommand.UpdateUrl,
             "n" or "notes" => BookmarkDetailMenuCommand.UpdateNotes,
+            "x" or "delete" => BookmarkDetailMenuCommand.Delete,
             "q" or "back" => BookmarkDetailMenuCommand.Back,
             _ => BookmarkDetailMenuCommand.Unknown
         };

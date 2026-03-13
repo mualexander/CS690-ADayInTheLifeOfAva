@@ -7,9 +7,8 @@ public enum StayMenuCommand
     SetPlace,
     SetStartDate,
     SetEndDate,
-    AddExpense,
-    RemoveExpense,
-    RemoveStay,
+    ManageExpenses,
     ManageBookmarks,
+    DeleteStay,
     Back
 }

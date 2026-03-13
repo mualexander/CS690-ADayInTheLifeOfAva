@@ -13,7 +13,7 @@ public static class BookmarkMenuParser
             "l" or "list" => BookmarkMenuCommand.ListBookmarks,
             "a" or "add" => BookmarkMenuCommand.AddBookmark,
             "s" or "select" => BookmarkMenuCommand.SelectBookmark,
-            "d" or "delete" => BookmarkMenuCommand.DeleteBookmark,
+            "x" or "delete" => BookmarkMenuCommand.DeleteBookmark,
             "q" or "back" => BookmarkMenuCommand.Back,
             _ => BookmarkMenuCommand.Unknown
         };

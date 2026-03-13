@@ -63,17 +63,40 @@ public static class MenuRenderer
         ShowMenu(
             "Stay Menu",
             ("V", "View stay details"),
-            ("A", "Add expense"),
-            ("R", "Remove expense"),
             ("P", "Set place"),
             ("I", "Set start date"),
             ("O", "Set end date"),
+            ("E", "Expenses"),
             ("B", "Bookmarks"),
             ("X", "Delete stay"),
             ("Q", "Back")
         );
     }
 
+    public static void ShowExpenseMenu()
+    {
+        ShowMenu(
+            "Expense Menu",
+            ("L", "List expenses"),
+            ("A", "Add expense"),
+            ("S", "Select expense"),
+            ("X", "Delete expense"),
+            ("Q", "Back")
+        );
+    }
+
+    public static void ShowExpenseDetailMenu()
+    {
+        ShowMenu(
+            "Expense Detail Menu",
+            ("V", "View expense details"),
+            ("R", "Rename expense"),
+            ("U", "Update amount"),
+            ("N", "Update notes"),
+            ("X", "Delete expense"),
+            ("Q", "Back")
+        );
+    }
     public static void ShowBookmarkMenu()
     {
         ShowMenu(
@@ -81,7 +104,7 @@ public static class MenuRenderer
             ("L", "List bookmarks"),
             ("A", "Add bookmark"),
             ("S", "Select bookmark"),
-            ("D", "Delete bookmark"),
+            ("X", "Delete bookmark"),
             ("Q", "Back")
         );
     }
@@ -94,6 +117,7 @@ public static class MenuRenderer
             ("R", "Rename bookmark"),
             ("U", "Update URL"),
             ("N", "Update notes"),
+            ("X", "Delete bookmark"),
             ("Q", "Back")
         );
     }
@@ -158,6 +182,36 @@ public static class MenuRenderer
         }
     }
 
+    public static void ShowExpenses(IReadOnlyList<ExpenseSummary> expenses)
+    {
+        WriteTitle("Expenses");
+
+        if (expenses.Count == 0)
+        {
+            WriteLine("(no expenses yet)");
+            return;
+        }
+
+        for (int i = 0; i < expenses.Count; i++)
+        {
+            var e = expenses[i];
+            WriteLine($"{i + 1}. {e.Name} | {e.Amount}");
+            if (!string.IsNullOrWhiteSpace(e.Notes))
+            {
+                WriteLine($"   Notes: {e.Notes}");
+            }
+        }
+    }
+
+    public static void ShowExpenseDetails(ExpenseSummary expense)
+    {
+        WriteTitle("Expense Details");
+        WriteLine($"Name:     {expense.Name}");
+        WriteLine($"Amount:       {expense.Amount}");
+        WriteLine($"CreatedAt: {expense.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
+        WriteLine($"Notes:     {expense.Notes ?? "(none)"}");
+    }
+
     public static void ShowBookmarks(IReadOnlyList<BookmarkSummary> bookmarks)
     {
         WriteTitle("Bookmarks");
@@ -187,6 +241,7 @@ public static class MenuRenderer
         WriteLine($"CreatedAt: {bookmark.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
         WriteLine($"Notes:     {bookmark.Notes ?? "(none)"}");
     }
+
     public static void ShowError(string message)
     {
         WriteLine($"ERROR: {message}");

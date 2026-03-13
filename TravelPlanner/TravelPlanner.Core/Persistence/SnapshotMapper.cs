@@ -32,10 +32,11 @@ public static class SnapshotMapper
     {
         return new ExpenseSnapshot(
             expense.Id,
-            expense.Date,
+            expense.Name,
             expense.Amount,
             expense.Category.ToString(),
-            expense.Note
+            expense.Notes,
+            expense.CreatedAt
         );
     }
 
@@ -64,7 +65,14 @@ public static class SnapshotMapper
                 if (!Enum.TryParse<ExpenseCategory>(expSnap.Category, ignoreCase: true, out var cat))
                     cat = ExpenseCategory.Other;
 
-                var exp = Expense.Hydrate(expSnap.Id, expSnap.Date, expSnap.Amount, cat, expSnap.Note);
+                var exp = Expense.Hydrate(
+                    expSnap.Id,
+                    expSnap.Name,
+                    expSnap.Amount,
+                    cat,
+                    expSnap.Note,
+                    expSnap.CreatedAt
+                 );
                 stay.HydrateAddExpense(exp);
             }
 

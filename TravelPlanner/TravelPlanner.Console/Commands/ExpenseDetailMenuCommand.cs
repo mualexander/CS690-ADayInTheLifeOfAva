@@ -1,11 +1,11 @@
 ﻿namespace TravelPlanner.ConsoleApp;
 
-public enum BookmarkDetailMenuCommand
+public enum ExpenseDetailMenuCommand
 {
     Unknown,
     ViewDetails,
     Rename,
-    UpdateUrl,
+    UpdateAmount,
     UpdateNotes,
     Delete,
     Back

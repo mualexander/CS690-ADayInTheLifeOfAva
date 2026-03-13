@@ -2,8 +2,9 @@ namespace TravelPlanner.Core.Persistence;
 
 public record ExpenseSnapshot(
     Guid Id,
-    DateTime Date,
+    string Name,
     decimal Amount,
     string Category,
-    string? Note
+    string? Note,
+    DateTime CreatedAt
 );

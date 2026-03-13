@@ -121,7 +121,7 @@ public class TripServiceTests
         var svc = new TripService(repo, ctx);
 
         Assert.Throws<InvalidOperationException>(() =>
-            svc.AddExpenseToStay(Guid.NewGuid(), DateTime.UtcNow.Date, 10m, ExpenseCategory.Food));
+            svc.AddExpenseToStay(Guid.NewGuid(), "Meals", 10m, ExpenseCategory.Food));
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public class TripServiceTests
         svc.SelectTrip(trip.Id);
 
         Assert.Throws<InvalidOperationException>(() =>
-            svc.AddExpenseToStay(Guid.NewGuid(), DateTime.UtcNow.Date, 10m, ExpenseCategory.Food));
+            svc.AddExpenseToStay(Guid.NewGuid(), "Meals", 10m, ExpenseCategory.Food));
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public class TripServiceTests
         svc.AddStay("Tokyo", "Japan");
         var stayId = svc.GetStays().Single().Id;
 
-        svc.AddExpenseToStay(stayId, DateTime.UtcNow.Date, 180m, ExpenseCategory.Food, "Sushi");
+        svc.AddExpenseToStay(stayId, "Meals", 180m, ExpenseCategory.Food, "Sushi");
 
         Assert.Equal(180m, svc.GetTripTotalSpent());
         Assert.Equal(4820m, svc.GetTripRemainingBudget());
@@ -175,7 +175,7 @@ public class TripServiceTests
         svc.AddStay("Tokyo", "Japan");
         var stayId = svc.GetStays().Single().Id;
 
-        svc.AddExpenseToStay(stayId, DateTime.UtcNow.Date, 200m, ExpenseCategory.Food);
+        svc.AddExpenseToStay(stayId, "Meals", 200m, ExpenseCategory.Food);
 
         var trips = svc.GetTrips();
         var summary = trips.Single(t => t.Id == trip.Id);
