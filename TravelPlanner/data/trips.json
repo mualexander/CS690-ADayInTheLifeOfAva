@@ -27,6 +27,14 @@
             "Category": "Transportation",
             "Note": "Using the Go app",
             "CreatedAt": "2026-03-13T05:59:28.8611203Z"
+          },
+          {
+            "Id": "78fc10b3-4a5c-4b35-8813-5f84fe3141fc",
+            "Name": "Drinks",
+            "Amount": 750,
+            "Category": "Activities",
+            "Note": "Kanpai!",
+            "CreatedAt": "2026-03-13T07:31:45.8334376Z"
           }
         ],
         "Bookmarks": [

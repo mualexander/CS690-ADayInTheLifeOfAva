@@ -1,6 +1,6 @@
-using TravelPlanner.Console.Commands;
+using TravelPlanner.Cli.Commands;
 
-namespace TravelPlanner.Console.Parsers;
+namespace TravelPlanner.Cli.Parsers;
 
 public static class MainMenuParser
 {

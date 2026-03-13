@@ -1,4 +1,4 @@
-namespace TravelPlanner.ConsoleApp;
+namespace TravelPlanner.Cli;
 
 public enum AppMode
 {

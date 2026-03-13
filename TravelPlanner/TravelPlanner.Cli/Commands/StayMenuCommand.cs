@@ -1,4 +1,4 @@
-namespace TravelPlanner.Console.Commands;
+namespace TravelPlanner.Cli.Commands;
 
 public enum StayMenuCommand
 {
