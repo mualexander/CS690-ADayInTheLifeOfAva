@@ -6,5 +6,6 @@ public record StaySnapshot(
     string Country,
     DateTime? StartDate,
     DateTime? EndDate,
-    List<ExpenseSnapshot> Expenses
+    List<ExpenseSnapshot> Expenses,
+    List<BookmarkSnapshot> Bookmarks
 );

@@ -11,7 +11,16 @@
         "Country": "Japan",
         "StartDate": null,
         "EndDate": null,
-        "Expenses": []
+        "Expenses": [],
+        "Bookmarks": [
+          {
+            "Id": "6ee39ac2-bd46-4ab2-88c1-99ebadac3a3f",
+            "Title": "Famous Ramen Shops",
+            "Url": "https://www.5amramen.com/post/hiroshima-ramen-3-famous-shops",
+            "Notes": "3 famous ramen shops from 5amramen.com",
+            "CreatedAt": "2026-03-13T02:43:40.3824438Z"
+          }
+        ]
       }
     ]
   }

@@ -52,4 +52,12 @@ public class Bookmark
     {
         return $"{Title} ({Url})";
     }
+
+    internal static Bookmark Hydrate(Guid id, string title, string url, string? notes, DateTime createdAt)
+    {
+        var bookmark = new Bookmark(title, url, notes);
+        bookmark.Id = id;
+        bookmark.CreatedAt = createdAt;
+        return bookmark;
+    }
 }

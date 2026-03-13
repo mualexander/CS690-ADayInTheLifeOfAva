@@ -190,4 +190,9 @@ public class Stay
     {
         _expenses.Add(expense);
     }
+
+    internal void HydrateAddBookmark(Bookmark bookmark)
+    {
+        _bookmarks.Add(bookmark);
+    }
 }
