@@ -15,6 +15,9 @@ public class Stay
     private readonly List<Expense> _expenses = new();
     public IReadOnlyCollection<Expense> Expenses => _expenses.AsReadOnly();
 
+    private readonly List<Bookmark> _bookmarks = new();
+    public IReadOnlyCollection<Bookmark> Bookmarks => _bookmarks.AsReadOnly();
+
     public Stay(Place place)
     {
         Place = place ?? throw new ArgumentNullException(nameof(place));
@@ -148,6 +151,28 @@ public class Stay
     public void SetPlace(string city, string country)
     {
         Place = new Place(city, country);
+    }
+
+    public Bookmark AddBookmark(string title, string url, string? notes = null)
+    {
+        var bookmark = new Bookmark(title, url, notes);
+        _bookmarks.Add(bookmark);
+        return bookmark;
+    }
+
+    public void RemoveBookmark(Guid bookmarkId)
+    {
+        var bookmark = _bookmarks.FirstOrDefault(b => b.Id == bookmarkId);
+        if (bookmark == null)
+            throw new InvalidOperationException("Bookmark not found.");
+
+        _bookmarks.Remove(bookmark);
+    }
+
+    public Bookmark GetBookmark(Guid bookmarkId)
+    {
+        return _bookmarks.FirstOrDefault(b => b.Id == bookmarkId)
+            ?? throw new InvalidOperationException("Bookmark not found.");
     }
 
     internal static Stay Hydrate(Guid id, Place place, DateTime? start, DateTime? end)
