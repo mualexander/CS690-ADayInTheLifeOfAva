@@ -221,6 +221,22 @@ static AppMode HandleStayMenu(TripService svc, ref StaySummary? activeStay)
         case StayMenuCommand.ManageBookmarks:
             return AppMode.BookmarkMenu;
 
+        case StayMenuCommand.SetPlace:
+            SetStayPlace(svc, ref activeStay);
+            return AppMode.StayMenu;
+
+        case StayMenuCommand.SetStartDate:
+            SetStayStartDate(svc, ref activeStay);
+            return AppMode.StayMenu;
+
+        case StayMenuCommand.SetEndDate:
+            SetStayEndDate(svc, ref activeStay);
+            return AppMode.StayMenu;
+
+        case StayMenuCommand.DeleteStay:
+            DeleteActiveStay(svc, ref activeStay);
+            return AppMode.TripMenu;
+
         case StayMenuCommand.Back:
             activeStay = null;
             return AppMode.TripMenu;
@@ -404,6 +420,76 @@ static StaySummary? SelectStay(TripService svc)
     var selected = stays[idx - 1];
     MenuRenderer.ShowMessage($"Selected stay: {selected.DisplayKey}");
     return selected;
+}
+
+static StaySummary RequireActiveStay(StaySummary? activeStay)
+{
+    return activeStay ?? throw new InvalidOperationException("No active stay selected.");
+}
+
+static void SetStayPlace(TripService svc, ref StaySummary? activeStay)
+{
+    var stay = RequireActiveStay(activeStay);
+
+    Console.Write("New city: ");
+    var city = (Console.ReadLine() ?? "").Trim();
+
+    Console.Write("New country: ");
+    var country = (Console.ReadLine() ?? "").Trim();
+
+    svc.UpdateStayPlace(stay.Id, city, country);
+    activeStay = RefreshActiveStay(svc, stay.Id);
+
+    MenuRenderer.ShowMessage("Stay place updated.");
+}
+
+static void SetStayStartDate(TripService svc, ref StaySummary? activeStay)
+{
+    var stay = RequireActiveStay(activeStay);
+
+    Console.Write("New start date (YYYY-MM-DD): ");
+    var input = (Console.ReadLine() ?? "").Trim();
+
+    var startDate = ParseDate(input);
+
+    svc.UpdateStayStartDate(stay.Id, startDate);
+    activeStay = RefreshActiveStay(svc, stay.Id);
+
+    MenuRenderer.ShowMessage("Stay start date updated.");
+}
+
+static void SetStayEndDate(TripService svc, ref StaySummary? activeStay)
+{
+    var stay = RequireActiveStay(activeStay);
+
+    Console.Write("New end date (YYYY-MM-DD): ");
+    var input = (Console.ReadLine() ?? "").Trim();
+
+    var endDate = ParseDate(input);
+
+    svc.UpdateStayEndDate(stay.Id, endDate);
+    activeStay = RefreshActiveStay(svc, stay.Id);
+
+    MenuRenderer.ShowMessage("Stay end date updated.");
+}
+
+static void DeleteActiveStay(TripService svc, ref StaySummary? activeStay)
+{
+    var stay = RequireActiveStay(activeStay);
+
+    Console.Write($"Type DELETE to remove '{stay.DisplayKey}': ");
+    var confirm = (Console.ReadLine() ?? "").Trim();
+
+    if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+    {
+        MenuRenderer.ShowMessage("Delete cancelled.");
+        return;
+    }
+
+    svc.DeleteStay(stay.Id);
+    activeStay = null;
+
+    MenuRenderer.ShowMessage("Stay deleted.");
 }
 
 static void AddExpenseToStay(TripService svc, StaySummary activeStay)
