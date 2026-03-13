@@ -31,30 +31,86 @@ while (true)
         {
             case AppMode.MainMenu:
                 mode = HandleMainMenu(svc, ctx);
-                if (mode != AppMode.StayMenu)
+
+                if (mode == AppMode.MainMenu)
+                {
                     activeStay = null;
+                    activeBookmark = null;
+                }
                 break;
 
             case AppMode.TripMenu:
                 mode = HandleTripMenu(svc, ctx, ref activeStay);
+
+                if (mode == AppMode.MainMenu)
+                {
+                    activeStay = null;
+                    activeBookmark = null;
+                }
                 break;
 
             case AppMode.StayMenu:
                 mode = HandleStayMenu(svc, ref activeStay);
+
+                if (mode == AppMode.TripMenu)
+                {
+                    activeBookmark = null;
+                }
+                else if (mode == AppMode.MainMenu)
+                {
+                    activeStay = null;
+                    activeBookmark = null;
+                }
                 break;
 
             case AppMode.BookmarkMenu:
                 mode = HandleBookmarkMenu(svc, activeStay, ref activeBookmark);
+
+                if (mode == AppMode.StayMenu)
+                {
+                    activeBookmark = null;
+                }
+                else if (mode == AppMode.TripMenu)
+                {
+                    activeStay = null;
+                    activeBookmark = null;
+                }
+                else if (mode == AppMode.MainMenu)
+                {
+                    activeStay = null;
+                    activeBookmark = null;
+                }
                 break;
 
             case AppMode.BookmarkDetailMenu:
                 mode = HandleBookmarkDetailMenu(svc, activeStay, ref activeBookmark);
+
+                if (mode == AppMode.BookmarkMenu)
+                {
+                    // keep activeStay, clear bookmark selection
+                    activeBookmark = null;
+                }
+                else if (mode == AppMode.StayMenu)
+                {
+                    activeBookmark = null;
+                }
+                else if (mode == AppMode.TripMenu)
+                {
+                    activeStay = null;
+                    activeBookmark = null;
+                }
+                else if (mode == AppMode.MainMenu)
+                {
+                    activeStay = null;
+                    activeBookmark = null;
+                }
                 break;
 
             default:
                 MenuRenderer.ShowError("Unknown application mode.");
                 mode = AppMode.MainMenu;
                 activeStay = null;
+                activeBookmark = null;
                 break;
         }
     }
@@ -247,15 +303,15 @@ static AppMode HandleBookmarkDetailMenu(
 
         case BookmarkDetailMenuCommand.Rename:
             RenameBookmark(svc, activeStay, ref activeBookmark);
-            return AppMode.BookmarkDetailMenu;
+            return activeBookmark is null ? AppMode.BookmarkMenu : AppMode.BookmarkDetailMenu;
 
         case BookmarkDetailMenuCommand.UpdateUrl:
             UpdateBookmarkUrl(svc, activeStay, ref activeBookmark);
-            return AppMode.BookmarkDetailMenu;
+            return activeBookmark is null ? AppMode.BookmarkMenu : AppMode.BookmarkDetailMenu;
 
         case BookmarkDetailMenuCommand.UpdateNotes:
             UpdateBookmarkNotes(svc, activeStay, ref activeBookmark);
-            return AppMode.BookmarkDetailMenu;
+            return activeBookmark is null ? AppMode.BookmarkMenu : AppMode.BookmarkDetailMenu;
 
         case BookmarkDetailMenuCommand.Back:
             activeBookmark = null;
@@ -382,22 +438,7 @@ static StaySummary? RefreshActiveStay(TripService svc, Guid stayId)
 static void ListBookmarks(TripService svc, StaySummary activeStay)
 {
     var bookmarks = svc.GetBookmarksForStay(activeStay.Id);
-
-    if (bookmarks.Count == 0)
-    {
-        MenuRenderer.ShowMessage("(no bookmarks yet)");
-        return;
-    }
-
-    for (int i = 0; i < bookmarks.Count; i++)
-    {
-        var b = bookmarks[i];
-        Console.WriteLine($"{i + 1}. {b.Title} | {b.Url}");
-        if (!string.IsNullOrWhiteSpace(b.Notes))
-        {
-            Console.WriteLine($"   Notes: {b.Notes}");
-        }
-    }
+    MenuRenderer.ShowBookmarks(bookmarks);
 }
 
 static void AddBookmark(TripService svc, StaySummary activeStay)
@@ -416,6 +457,11 @@ static void AddBookmark(TripService svc, StaySummary activeStay)
     MenuRenderer.ShowMessage("Bookmark added.");
 }
 
+static BookmarkSummary RequireActiveBookmark(BookmarkSummary? activeBookmark)
+{
+    return activeBookmark ?? throw new InvalidOperationException("No active bookmark selected.");
+}
+
 static void DeleteBookmark(TripService svc, StaySummary activeStay)
 {
     var bookmarks = svc.GetBookmarksForStay(activeStay.Id);
@@ -423,10 +469,7 @@ static void DeleteBookmark(TripService svc, StaySummary activeStay)
     if (bookmarks.Count == 0)
         throw new InvalidOperationException("No bookmarks found.");
 
-    for (int i = 0; i < bookmarks.Count; i++)
-    {
-        Console.WriteLine($"{i + 1}. {bookmarks[i].Title} | {bookmarks[i].Url}");
-    }
+    MenuRenderer.ShowBookmarks(bookmarks);
 
     Console.Write("Select bookmark #: ");
     var input = (Console.ReadLine() ?? "").Trim();
@@ -472,42 +515,39 @@ static BookmarkSummary? SelectBookmark(TripService svc, StaySummary activeStay)
 
 static void RenameBookmark(TripService svc, StaySummary activeStay, ref BookmarkSummary? activeBookmark)
 {
-    if (activeBookmark is null)
-        throw new InvalidOperationException("No active bookmark selected.");
+    var bookmark = RequireActiveBookmark(activeBookmark);
 
     Console.Write("New bookmark title: ");
     var newTitle = (Console.ReadLine() ?? "").Trim();
 
-    svc.UpdateBookmarkTitle(activeStay.Id, activeBookmark.Id, newTitle);
-    activeBookmark = RefreshActiveBookmark(svc, activeStay.Id, activeBookmark.Id);
+    svc.UpdateBookmarkTitle(activeStay.Id, bookmark.Id, newTitle);
+    activeBookmark = RefreshActiveBookmark(svc, activeStay.Id, bookmark.Id);
 
     MenuRenderer.ShowMessage("Bookmark title updated.");
 }
 
 static void UpdateBookmarkUrl(TripService svc, StaySummary activeStay, ref BookmarkSummary? activeBookmark)
 {
-    if (activeBookmark is null)
-        throw new InvalidOperationException("No active bookmark selected.");
+    var bookmark = RequireActiveBookmark(activeBookmark);
 
     Console.Write("New bookmark URL: ");
     var newUrl = (Console.ReadLine() ?? "").Trim();
 
-    svc.UpdateBookmarkUrl(activeStay.Id, activeBookmark.Id, newUrl);
-    activeBookmark = RefreshActiveBookmark(svc, activeStay.Id, activeBookmark.Id);
+    svc.UpdateBookmarkUrl(activeStay.Id, bookmark.Id, newUrl);
+    activeBookmark = RefreshActiveBookmark(svc, activeStay.Id, bookmark.Id);
 
     MenuRenderer.ShowMessage("Bookmark URL updated.");
 }
 
 static void UpdateBookmarkNotes(TripService svc, StaySummary activeStay, ref BookmarkSummary? activeBookmark)
 {
-    if (activeBookmark is null)
-        throw new InvalidOperationException("No active bookmark selected.");
+    var bookmark = RequireActiveBookmark(activeBookmark);
 
     Console.Write("New notes (blank clears notes): ");
     var newNotes = Console.ReadLine();
 
-    svc.UpdateBookmarkNotes(activeStay.Id, activeBookmark.Id, newNotes);
-    activeBookmark = RefreshActiveBookmark(svc, activeStay.Id, activeBookmark.Id);
+    svc.UpdateBookmarkNotes(activeStay.Id, bookmark.Id, newNotes);
+    activeBookmark = RefreshActiveBookmark(svc, activeStay.Id, bookmark.Id);
 
     MenuRenderer.ShowMessage("Bookmark notes updated.");
 }
