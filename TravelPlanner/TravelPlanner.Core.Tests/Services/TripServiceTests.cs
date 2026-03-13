@@ -572,4 +572,61 @@ public class TripServiceTests
             svc.UpdateBookmarkTitle(stayId, Guid.NewGuid(), "New Title"));
     }
     #endregion
+    #region FlightOption Tests
+    [Fact]
+    public void AddFlightOptionToStay_AddsFlightOption()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("California Trip", 2000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Santa Cruz", "USA");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(
+            stayId,
+            "https://example.com/flight",
+            "LAX",
+            "SJC",
+            new DateTime(2026, 3, 10, 8, 0, 0),
+            new DateTime(2026, 3, 10, 9, 30, 0));
+
+        var options = svc.GetFlightOptionsForStay(stayId);
+
+        Assert.Single(options);
+        Assert.Equal("LAX", options[0].FromAirportCode);
+        Assert.Equal("SJC", options[0].ToAirportCode);
+    }
+
+    [Fact]
+    public void DeleteFlightOption_RemovesFlightOption()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("California Trip", 2000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Santa Cruz", "USA");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(
+            stayId,
+            "https://example.com/flight",
+            "LAX",
+            "SJC",
+            new DateTime(2026, 3, 10, 8, 0, 0),
+            new DateTime(2026, 3, 10, 9, 30, 0));
+
+        var optionId = svc.GetFlightOptionsForStay(stayId).Single().Id;
+
+        svc.DeleteFlightOption(stayId, optionId);
+
+        Assert.Empty(svc.GetFlightOptionsForStay(stayId));
+    }
+    #endregion
 }

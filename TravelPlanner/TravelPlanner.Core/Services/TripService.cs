@@ -291,5 +291,59 @@ public class TripService
         _repository.Update(trip);
     }
 
+    // FlightOptions
+    public void AddFlightOptionToStay(
+        Guid stayId,
+        string url,
+        string fromAirportCode,
+        string toAirportCode,
+        DateTime departTime,
+        DateTime arriveTime)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
 
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        stay.AddFlightOption(url, fromAirportCode, toAirportCode, departTime, arriveTime);
+
+        _repository.Update(trip);
+    }
+
+    public IReadOnlyList<FlightOptionSummary> GetFlightOptionsForStay(Guid stayId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        return stay.FlightOptions
+            .OrderBy(f => f.DepartTime)
+            .Select(f => new FlightOptionSummary(
+                f.Id,
+                f.Url,
+                f.LastCheckedAt,
+                f.IsSelected,
+                f.FromAirportCode,
+                f.ToAirportCode,
+                f.DepartTime,
+                f.ArriveTime
+            ))
+            .ToList();
+    }
+
+    public void DeleteFlightOption(Guid stayId, Guid flightOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        stay.RemoveFlightOption(flightOptionId);
+
+        _repository.Update(trip);
+    }
 }
