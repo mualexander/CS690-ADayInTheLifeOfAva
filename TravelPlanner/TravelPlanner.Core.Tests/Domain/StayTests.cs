@@ -114,4 +114,70 @@ public class StayTests
 
         Assert.Equal("Osaka, Japan", stay.DisplayKey);
     }
+
+    [Fact]
+    public void SetPlace_UpdatesPlace()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+
+        stay.SetPlace(new Place("Osaka", "Japan"));
+
+        Assert.Equal("Osaka", stay.Place.City);
+        Assert.Equal("Japan", stay.Place.Country);
+    }
+
+    [Fact]
+    public void SetStartDate_UpdatesStartDate()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        stay.SetDates(new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        stay.SetStartDate(new DateTime(2026, 1, 9));
+
+        Assert.Equal(new DateTime(2026, 1, 9), stay.StartDate);
+        Assert.Equal(new DateTime(2026, 1, 14), stay.EndDate);
+    }
+
+    [Fact]
+    public void SetStartDate_ThrowsIfAfterEndDate()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        stay.SetDates(new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        Assert.Throws<ArgumentException>(() =>
+            stay.SetStartDate(new DateTime(2026, 1, 15)));
+    }
+
+    [Fact]
+    public void SetEndDate_UpdatesEndDate()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        stay.SetDates(new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        stay.SetEndDate(new DateTime(2026, 1, 15));
+
+        Assert.Equal(new DateTime(2026, 1, 15), stay.EndDate);
+    }
+
+    [Fact]
+    public void SetEndDate_ThrowsIfBeforeStartDate()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        stay.SetDates(new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        Assert.Throws<ArgumentException>(() =>
+            stay.SetEndDate(new DateTime(2026, 1, 9)));
+    }
+
+    [Fact]
+    public void DisplayKey_ReflectsUpdatedPlaceAndDates()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        stay.SetDates(new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        stay.SetPlace(new Place("Osaka", "Japan"));
+        stay.SetEndDate(new DateTime(2026, 1, 15));
+
+        Assert.Equal("Osaka, Japan (2026-01-10..2026-01-15)", stay.DisplayKey);
+    }
 }
