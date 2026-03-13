@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TravelPlanner.Core.Models;
 using TravelPlanner.Core.Services;
 
-namespace TravelPlanner.ConsoleApp;
+namespace TravelPlanner.Cli;
 
 public static class MenuRenderer
 {
