@@ -42,6 +42,10 @@ while (true)
                 mode = HandleStayMenu(svc, ref activeStay);
                 break;
 
+            case AppMode.BookmarkMenu:
+                mode = HandleBookmarkMenu(svc, activeStay);
+                break;
+
             default:
                 MenuRenderer.ShowError("Unknown application mode.");
                 mode = AppMode.MainMenu;
@@ -153,6 +157,9 @@ static AppMode HandleStayMenu(TripService svc, ref StaySummary? activeStay)
             activeStay = RefreshActiveStay(svc, activeStay.Id);
             return AppMode.StayMenu;
 
+        case StayMenuCommand.ManageBookmarks:
+            return AppMode.BookmarkMenu;
+
         case StayMenuCommand.Back:
             activeStay = null;
             return AppMode.TripMenu;
@@ -161,6 +168,42 @@ static AppMode HandleStayMenu(TripService svc, ref StaySummary? activeStay)
         default:
             MenuRenderer.ShowMessage("Unknown choice.");
             return AppMode.StayMenu;
+    }
+}
+
+static AppMode HandleBookmarkMenu(TripService svc, StaySummary? activeStay)
+{
+    if (activeStay is null)
+    {
+        MenuRenderer.ShowMessage("No active stay selected.");
+        return AppMode.TripMenu;
+    }
+
+    MenuRenderer.ShowBookmarkMenu();
+    var command = BookmarkMenuParser.Parse(Console.ReadLine());
+    MenuRenderer.BlankLine();
+
+    switch (command)
+    {
+        case BookmarkMenuCommand.ListBookmarks:
+            ListBookmarks(svc, activeStay);
+            return AppMode.BookmarkMenu;
+
+        case BookmarkMenuCommand.AddBookmark:
+            AddBookmark(svc, activeStay);
+            return AppMode.BookmarkMenu;
+
+        case BookmarkMenuCommand.DeleteBookmark:
+            DeleteBookmark(svc, activeStay);
+            return AppMode.BookmarkMenu;
+
+        case BookmarkMenuCommand.Back:
+            return AppMode.StayMenu;
+
+        case BookmarkMenuCommand.Unknown:
+        default:
+            MenuRenderer.ShowMessage("Unknown choice.");
+            return AppMode.BookmarkMenu;
     }
 }
 
@@ -273,6 +316,76 @@ static void AddExpenseToStay(TripService svc, StaySummary activeStay)
 static StaySummary? RefreshActiveStay(TripService svc, Guid stayId)
 {
     return svc.GetStays().FirstOrDefault(s => s.Id == stayId);
+}
+
+static void ListBookmarks(TripService svc, StaySummary activeStay)
+{
+    var bookmarks = svc.GetBookmarksForStay(activeStay.Id);
+
+    if (bookmarks.Count == 0)
+    {
+        MenuRenderer.ShowMessage("(no bookmarks yet)");
+        return;
+    }
+
+    for (int i = 0; i < bookmarks.Count; i++)
+    {
+        var b = bookmarks[i];
+        Console.WriteLine($"{i + 1}. {b.Title} | {b.Url}");
+        if (!string.IsNullOrWhiteSpace(b.Notes))
+        {
+            Console.WriteLine($"   Notes: {b.Notes}");
+        }
+    }
+}
+
+static void AddBookmark(TripService svc, StaySummary activeStay)
+{
+    Console.Write("Bookmark title: ");
+    var title = (Console.ReadLine() ?? "").Trim();
+
+    Console.Write("Bookmark URL: ");
+    var url = (Console.ReadLine() ?? "").Trim();
+
+    Console.Write("Notes (optional): ");
+    var notes = Console.ReadLine();
+
+    svc.AddBookmarkToStay(activeStay.Id, title, url, notes);
+
+    MenuRenderer.ShowMessage("Bookmark added.");
+}
+
+static void DeleteBookmark(TripService svc, StaySummary activeStay)
+{
+    var bookmarks = svc.GetBookmarksForStay(activeStay.Id);
+
+    if (bookmarks.Count == 0)
+        throw new InvalidOperationException("No bookmarks found.");
+
+    for (int i = 0; i < bookmarks.Count; i++)
+    {
+        Console.WriteLine($"{i + 1}. {bookmarks[i].Title} | {bookmarks[i].Url}");
+    }
+
+    Console.Write("Select bookmark #: ");
+    var input = (Console.ReadLine() ?? "").Trim();
+
+    if (!int.TryParse(input, out var idx) || idx < 1 || idx > bookmarks.Count)
+        throw new ArgumentException("Invalid selection.");
+
+    var selected = bookmarks[idx - 1];
+
+    Console.Write($"Type DELETE to remove '{selected.Title}': ");
+    var confirm = (Console.ReadLine() ?? "").Trim();
+
+    if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+    {
+        MenuRenderer.ShowMessage("Delete cancelled.");
+        return;
+    }
+
+    svc.DeleteBookmark(activeStay.Id, selected.Id);
+    MenuRenderer.ShowMessage("Bookmark deleted.");
 }
 
 static void SeedDemoData(TripService svc)

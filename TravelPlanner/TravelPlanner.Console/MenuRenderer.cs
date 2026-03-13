@@ -68,7 +68,19 @@ public static class MenuRenderer
             ("P", "Set place"),
             ("I", "Set start date"),
             ("O", "Set end date"),
+            ("B", "Bookmarks"),
             ("X", "Delete stay"),
+            ("Q", "Back")
+        );
+    }
+
+    public static void ShowBookmarkMenu()
+    {
+        ShowMenu(
+            "Bookmark Menu",
+            ("L", "List bookmarks"),
+            ("A", "Add bookmark"),
+            ("D", "Delete bookmark"),
             ("Q", "Back")
         );
     }
