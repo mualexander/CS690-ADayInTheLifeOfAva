@@ -32,7 +32,7 @@ public class TripService
 
     public void AddStay(string city, string country, DateTime? start = null, DateTime? end = null)
     {
-        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
+        var trip = GetActiveTrip();
 
         var place = new Place(city, country);
         trip.AddStay(place, start, end);
@@ -42,7 +42,7 @@ public class TripService
 
     public IReadOnlyList<StaySummary> GetStays()
     {
-        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
+        var trip = GetActiveTrip();
 
         return trip.Stays
             .Select(s => new StaySummary(
@@ -59,10 +59,8 @@ public class TripService
 
     public void AddExpenseToStay(Guid stayId, DateTime date, decimal amount, ExpenseCategory category, string? note = null)
     {
-        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
-
-        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
-            ?? throw new InvalidOperationException("Stay not found.");
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
 
         stay.AddExpense(date, amount, category, note);
         _repository.Update(trip);
@@ -84,19 +82,19 @@ public class TripService
 
     public decimal GetTripTotalSpent()
     {
-        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
+        var trip = GetActiveTrip();
         return trip.TotalSpent();
     }
 
     public decimal GetTripRemainingBudget()
     {
-        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
+        var trip = GetActiveTrip();
         return trip.RemainingBudget();
     }
 
     public void ArchiveActiveTrip()
     {
-        var trip = _context.ActiveTrip ?? throw new InvalidOperationException("No active trip.");
+        var trip = GetActiveTrip();
 
         trip.Archive();
         _repository.Update(trip);
@@ -109,11 +107,8 @@ public class TripService
 
     public void UpdateStayStartDate(Guid stayId, DateTime startDate)
     {
-        var trip = _context.ActiveTrip
-            ?? throw new InvalidOperationException("No active trip.");
-
-        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
-            ?? throw new InvalidOperationException("Stay not found.");
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
 
         stay.SetStartDate(startDate);
 
@@ -122,11 +117,8 @@ public class TripService
 
     public void UpdateStayEndDate(Guid stayId, DateTime endDate)
     {
-        var trip = _context.ActiveTrip
-            ?? throw new InvalidOperationException("No active trip.");
-
-        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
-            ?? throw new InvalidOperationException("Stay not found.");
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
 
         stay.SetEndDate(endDate);
 
@@ -135,18 +127,22 @@ public class TripService
 
     public void DeleteStay(Guid stayId)
     {
-        var trip = _context.ActiveTrip
-            ?? throw new InvalidOperationException("No active trip.");
+        var trip = GetActiveTrip();
 
         trip.RemoveStay(stayId);
 
         _repository.Update(trip);
     }
 
+    private Trip GetActiveTrip()
+    {
+        return _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+    }
+
     private Stay GetStay(Guid stayId)
     {
-        var trip = _context.ActiveTrip
-            ?? throw new InvalidOperationException("No active trip.");
+        var trip = GetActiveTrip();
 
         return trip.Stays.FirstOrDefault(s => s.Id == stayId)
             ?? throw new InvalidOperationException("Stay not found.");
@@ -154,10 +150,82 @@ public class TripService
 
     public void UpdateStayPlace(Guid stayId, string city, string country)
     {
-        var trip = _context.ActiveTrip!;
+        var trip = GetActiveTrip();
         var stay = GetStay(stayId);
 
         stay.SetPlace(new Place(city, country));
         _repository.Update(trip);
     }
+
+    public void AddBookmarkToStay(Guid stayId, string title, string url, string? notes = null)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        stay.AddBookmark(title, url, notes);
+
+        _repository.Update(trip);
+    }
+
+    public IReadOnlyList<BookmarkSummary> GetBookmarksForStay(Guid stayId)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        return stay.Bookmarks
+            .OrderBy(b => b.Title)
+            .Select(b => new BookmarkSummary(
+                b.Id,
+                b.Title,
+                b.Url,
+                b.Notes,
+                b.CreatedAt
+            ))
+            .ToList();
+    }
+
+    public void UpdateBookmarkTitle(Guid stayId, Guid bookmarkId, string newTitle)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var bookmark = stay.GetBookmark(bookmarkId);
+        bookmark.Rename(newTitle);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateBookmarkUrl(Guid stayId, Guid bookmarkId, string newUrl)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var bookmark = stay.GetBookmark(bookmarkId);
+        bookmark.UpdateUrl(newUrl);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateBookmarkNotes(Guid stayId, Guid bookmarkId, string? newNotes)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var bookmark = stay.GetBookmark(bookmarkId);
+        bookmark.UpdateNotes(newNotes);
+
+        _repository.Update(trip);
+    }
+
+    public void DeleteBookmark(Guid stayId, Guid bookmarkId)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        stay.RemoveBookmark(bookmarkId);
+
+        _repository.Update(trip);
+    }
+
+
 }
