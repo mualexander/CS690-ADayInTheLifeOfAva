@@ -276,4 +276,125 @@ public class TripServiceTests
         Assert.Contains(trips, t => t.Id == activeTrip.Id);
         Assert.DoesNotContain(trips, t => t.Id == archivedTrip.Id);
     }
+
+    #region Stay Tests
+
+    [Fact]
+    public void UpdateStayPlace_ChangesPlace()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.UpdateStayPlace(stayId, "Osaka", "Japan");
+
+        var updatedStay = svc.GetStays().Single();
+        Assert.Equal("Osaka", updatedStay.City);
+        Assert.Equal("Japan", updatedStay.Country);
+        Assert.Equal("Osaka, Japan", updatedStay.DisplayKey);
+    }
+
+    [Fact]
+    public void UpdateStayStartDate_ChangesStartDate()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan", new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.UpdateStayStartDate(stayId, new DateTime(2026, 1, 9));
+
+        var updatedStay = svc.GetStays().Single();
+        Assert.Equal(new DateTime(2026, 1, 9), updatedStay.StartDate);
+        Assert.Equal(new DateTime(2026, 1, 14), updatedStay.EndDate);
+        Assert.Equal("Tokyo, Japan (2026-01-09..2026-01-14)", updatedStay.DisplayKey);
+    }
+
+    [Fact]
+    public void UpdateStayEndDate_ChangesEndDate()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan", new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.UpdateStayEndDate(stayId, new DateTime(2026, 1, 15));
+
+        var updatedStay = svc.GetStays().Single();
+        Assert.Equal(new DateTime(2026, 1, 10), updatedStay.StartDate);
+        Assert.Equal(new DateTime(2026, 1, 15), updatedStay.EndDate);
+        Assert.Equal("Tokyo, Japan (2026-01-10..2026-01-15)", updatedStay.DisplayKey);
+    }
+
+    [Fact]
+    public void DeleteStay_RemovesStayFromTrip()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.DeleteStay(stayId);
+
+        Assert.Empty(svc.GetStays());
+    }
+
+    [Fact]
+    public void UpdateStayPlace_ThrowsWhenStayNotFound()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            svc.UpdateStayPlace(Guid.NewGuid(), "Osaka", "Japan"));
+    }
+
+    [Fact]
+    public void UpdateStayStartDate_ThrowsWhenNoActiveTrip()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            svc.UpdateStayStartDate(Guid.NewGuid(), new DateTime(2026, 1, 9)));
+    }
+
+    [Fact]
+    public void DeleteStay_ThrowsWhenNoActiveTrip()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            svc.DeleteStay(Guid.NewGuid()));
+    }
+
+    #endregion
 }

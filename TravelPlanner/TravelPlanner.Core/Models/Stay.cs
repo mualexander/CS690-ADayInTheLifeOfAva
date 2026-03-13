@@ -39,6 +39,32 @@ public class Stay
         EndDate = end;
     }
 
+    public void SetStartDate(DateTime startDate)
+    {
+        startDate = startDate.Date;
+
+        if (EndDate.HasValue && startDate > EndDate.Value.Date)
+            throw new ArgumentException("Start date cannot be after end date.");
+
+        StartDate = startDate;
+    }
+
+    public void SetEndDate(DateTime endDate)
+    {
+        endDate = endDate.Date;
+
+        if (StartDate.HasValue && endDate < StartDate.Value.Date)
+            throw new ArgumentException("End date cannot be before start date.");
+
+        EndDate = endDate;
+    }
+
+    public void ClearDates()
+    {
+        StartDate = null;
+        EndDate = null;
+    }
+
     public bool HasDates => StartDate.HasValue && EndDate.HasValue;
 
     public int? Days
@@ -113,6 +139,16 @@ public class Stay
     }
 
     public override string ToString() => DisplayKey;
+
+    public void SetPlace(Place place)
+    {
+        Place = place ?? throw new ArgumentNullException(nameof(place));
+    }
+
+    public void SetPlace(string city, string country)
+    {
+        Place = new Place(city, country);
+    }
 
     internal static Stay Hydrate(Guid id, Place place, DateTime? start, DateTime? end)
     {

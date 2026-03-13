@@ -106,4 +106,58 @@ public class TripService
     {
         _repository.Delete(tripId);
     }
+
+    public void UpdateStayStartDate(Guid stayId, DateTime startDate)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        stay.SetStartDate(startDate);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateStayEndDate(Guid stayId, DateTime endDate)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        stay.SetEndDate(endDate);
+
+        _repository.Update(trip);
+    }
+
+    public void DeleteStay(Guid stayId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        trip.RemoveStay(stayId);
+
+        _repository.Update(trip);
+    }
+
+    private Stay GetStay(Guid stayId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        return trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+    }
+
+    public void UpdateStayPlace(Guid stayId, string city, string country)
+    {
+        var trip = _context.ActiveTrip!;
+        var stay = GetStay(stayId);
+
+        stay.SetPlace(new Place(city, country));
+        _repository.Update(trip);
+    }
 }
