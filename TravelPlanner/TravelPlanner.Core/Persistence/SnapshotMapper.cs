@@ -24,7 +24,8 @@ public static class SnapshotMapper
             stay.StartDate,
             stay.EndDate,
             stay.Expenses.Select(ToSnapshot).ToList(),
-            stay.Bookmarks.Select(ToSnapshot).ToList()
+            stay.Bookmarks.Select(ToSnapshot).ToList(),
+            stay.FlightOptions.Select(ToSnapshot).ToList()
         );
     }
 
@@ -48,6 +49,21 @@ public static class SnapshotMapper
             bookmark.Url,
             bookmark.Notes,
             bookmark.CreatedAt
+        );
+    }
+
+    private static FlightOptionSnapshot ToSnapshot(FlightOption option)
+    {
+        return new FlightOptionSnapshot(
+            option.Id,
+            option.Url,
+            option.CreatedAt,
+            option.LastCheckedAt,
+            option.IsSelected,
+            option.FromAirportCode,
+            option.ToAirportCode,
+            option.DepartTime,
+            option.ArriveTime
         );
     }
 
@@ -87,6 +103,23 @@ public static class SnapshotMapper
                 );
 
                 stay.HydrateAddBookmark(bookmark);
+            }
+
+            foreach (var flightSnap in staySnap.FlightOptions ?? new List<FlightOptionSnapshot>())
+            {
+                var flight = FlightOption.Hydrate(
+                    flightSnap.Id,
+                    flightSnap.Url,
+                    flightSnap.CreatedAt,
+                    flightSnap.LastCheckedAt,
+                    flightSnap.IsSelected,
+                    flightSnap.FromAirportCode,
+                    flightSnap.ToAirportCode,
+                    flightSnap.DepartTime,
+                    flightSnap.ArriveTime
+                );
+
+                stay.HydrateAddFlightOption(flight);
             }
 
             trip.HydrateAddStay(stay);

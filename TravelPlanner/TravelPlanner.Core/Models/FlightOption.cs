@@ -56,4 +56,38 @@ public class FlightOption : TravelOption
     {
         return code.Trim().ToUpperInvariant();
     }
+
+    internal static FlightOption Hydrate(
+    Guid id,
+    string url,
+    DateTime createdAt,
+    DateTime? lastCheckedAt,
+    bool isSelected,
+    string fromAirportCode,
+    string toAirportCode,
+    DateTime departTime,
+    DateTime arriveTime)
+    {
+        var option = new FlightOption(
+            url,
+            fromAirportCode,
+            toAirportCode,
+            departTime,
+            arriveTime);
+
+        option.Id = id;
+        option.CreatedAt = createdAt;
+
+        if (lastCheckedAt.HasValue)
+        {
+            option.MarkChecked(lastCheckedAt.Value);
+        }
+
+        if (isSelected)
+        {
+            option.Select();
+        }
+
+        return option;
+    }
 }

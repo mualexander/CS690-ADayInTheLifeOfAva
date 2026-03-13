@@ -7,5 +7,6 @@ public record StaySnapshot(
     DateTime? StartDate,
     DateTime? EndDate,
     List<ExpenseSnapshot> Expenses,
-    List<BookmarkSnapshot> Bookmarks
+    List<BookmarkSnapshot> Bookmarks,
+    List<FlightOptionSnapshot> FlightOptions
 );

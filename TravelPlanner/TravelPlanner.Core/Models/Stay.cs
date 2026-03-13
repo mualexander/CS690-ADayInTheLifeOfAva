@@ -239,4 +239,9 @@ public class Stay
     {
         _bookmarks.Add(bookmark);
     }
+
+    internal void HydrateAddFlightOption(FlightOption option)
+    {
+        _flightOptions.Add(option);
+    }
 }
