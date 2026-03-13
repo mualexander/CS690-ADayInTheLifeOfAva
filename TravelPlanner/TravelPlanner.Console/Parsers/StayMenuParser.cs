@@ -12,12 +12,12 @@ public static class StayMenuParser
         {
             "v" or "view" => StayMenuCommand.ViewStayDetails,
             "a" or "add" => StayMenuCommand.AddExpense,
-            "x" or "remove" => StayMenuCommand.RemoveExpense,
+            "r" or "remove" => StayMenuCommand.RemoveExpense,
             "p" or "place" => StayMenuCommand.SetPlace,
             "i" or "checkin" => StayMenuCommand.SetStartDate,
             "o" or "checkout" => StayMenuCommand.SetEndDate,
             "b" or "bookmarks" => StayMenuCommand.ManageBookmarks,
-            "x" or "delete" => StayMenuCommand.RemoveStay,
+            "x" or "delete" => StayMenuCommand.DeleteStay,
             "q" or "back" => StayMenuCommand.Back,
             _ => StayMenuCommand.Unknown
         };
