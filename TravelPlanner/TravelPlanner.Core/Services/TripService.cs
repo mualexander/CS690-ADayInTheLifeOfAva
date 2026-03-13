@@ -57,15 +57,6 @@ public class TripService
             .ToList();
     }
 
-    public void AddExpenseToStay(Guid stayId, DateTime date, decimal amount, ExpenseCategory category, string? note = null)
-    {
-        var trip = GetActiveTrip();
-        var stay = GetStay(stayId);
-
-        stay.AddExpense(date, amount, category, note);
-        _repository.Update(trip);
-    }
-
     public IReadOnlyList<TripSummary> GetTrips()
     {
         return _repository.GetAll().Where(t => !t.IsArchived)
@@ -157,6 +148,79 @@ public class TripService
         _repository.Update(trip);
     }
 
+    // Expenses
+    public void AddExpenseToStay(Guid stayId, string name, decimal amount, ExpenseCategory category, string? note = null)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        stay.AddExpense(name, amount, category, note);
+        _repository.Update(trip);
+    }
+
+    public IReadOnlyList<ExpenseSummary> GetExpensesForStay(Guid stayId)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        return stay.Expenses
+            .OrderBy(e => e.Name)
+            .Select(e => new ExpenseSummary(
+                e.Id,
+                e.Name,
+                e.Amount,
+                e.Category,
+                e.Notes,
+                e.CreatedAt
+            ))
+            .ToList();
+    }
+
+    public void UpdateExpenseTitle(Guid stayId, Guid expenseId, string newName)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var expense = stay.GetExpense(expenseId);
+        expense.Rename(newName);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateExpenseAmount(Guid stayId, Guid expenseId, decimal newAmount)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var expense = stay.GetExpense(expenseId);
+        expense.UpdateAmount(newAmount);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateExpenseNotes(Guid stayId, Guid expenseId, string? newNotes)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var expense = stay.GetExpense(expenseId);
+        expense.UpdateNotes(newNotes);
+
+        _repository.Update(trip);
+    }
+
+    public void DeleteExpense(Guid stayId, Guid expenseId)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        stay.RemoveExpense(expenseId);
+
+        _repository.Update(trip);
+    }
+
+
+    // Bookmarks
     public void AddBookmarkToStay(Guid stayId, string title, string url, string? notes = null)
     {
         var trip = GetActiveTrip();

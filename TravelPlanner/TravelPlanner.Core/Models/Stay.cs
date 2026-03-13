@@ -93,22 +93,6 @@ public class Stay
         }
     }
 
-    public Expense AddExpense(DateTime date, decimal amount, ExpenseCategory category, string? note = null)
-    {
-        var expense = new Expense(date, amount, category, note);
-        _expenses.Add(expense);
-        return expense;
-    }
-
-    public void RemoveExpense(Guid expenseId)
-    {
-        var e = _expenses.FirstOrDefault(x => x.Id == expenseId);
-        if (e == null)
-            throw new InvalidOperationException("Expense not found.");
-
-        _expenses.Remove(e);
-    }
-
     public decimal TotalSpent() => _expenses.Sum(e => e.Amount);
 
     public decimal TotalSpent(ExpenseCategory category) =>
@@ -153,6 +137,30 @@ public class Stay
         Place = new Place(city, country);
     }
 
+    // Expenses
+    public Expense AddExpense(string name, decimal amount, ExpenseCategory category, string? notes = null)
+    {
+        var expense = new Expense(name, amount, category, notes);
+        _expenses.Add(expense);
+        return expense;
+    }
+
+    public void RemoveExpense(Guid expenseId)
+    {
+        var expense = _expenses.FirstOrDefault(e => e.Id == expenseId);
+        if (expense == null)
+            throw new InvalidOperationException("Expense not found.");
+
+        _expenses.Remove(expense);
+    }
+
+    public Expense GetExpense(Guid expenseId)
+    {
+        return _expenses.FirstOrDefault(e => e.Id == expenseId)
+            ?? throw new InvalidOperationException("Expense not found.");
+    }
+
+    // Bookmarks
     public Bookmark AddBookmark(string title, string url, string? notes = null)
     {
         var bookmark = new Bookmark(title, url, notes);

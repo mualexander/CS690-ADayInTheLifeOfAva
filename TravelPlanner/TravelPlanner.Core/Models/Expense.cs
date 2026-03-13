@@ -1,28 +1,58 @@
+using static System.Net.WebRequestMethods;
+
 namespace TravelPlanner.Core.Models;
 
 public class Expense
 {
     public Guid Id { get; internal set; }
-    public DateTime Date { get; private set; }
+    public string Name { get; private set; }
     public decimal Amount { get; private set; }
     public ExpenseCategory Category { get; private set; }
-    public string? Note { get; private set; }
+    public string? Notes { get; private set; }
 
-    public Expense(DateTime date, decimal amount, ExpenseCategory category, string? note = null)
+    public DateTime CreatedAt { get; internal set; }
+
+    public Expense(string name, decimal amount, ExpenseCategory category, string? notes = null)
     {
         if (amount <= 0) throw new ArgumentException("Expense amount must be > 0.", nameof(amount));
 
         Id = Guid.NewGuid();
-        Date = date;
+        Name = name;
         Amount = amount;
         Category = category;
-        Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+        CreatedAt = DateTime.UtcNow;
     }
 
-    internal static Expense Hydrate(Guid id, DateTime date, decimal amount, ExpenseCategory category, string? note)
+    public void Rename(string newName)
     {
-        var e = new Expense(date, amount, category, note);
+        if (string.IsNullOrWhiteSpace(newName))
+            throw new ArgumentException("Expense name cannot be empty.", nameof(newName));
+
+        Name = newName.Trim();
+    }
+
+    public void UpdateAmount(decimal newAmount)
+    {
+        Amount = newAmount;
+    }
+
+    public void UpdateNotes(string? newNotes)
+    {
+        Notes = string.IsNullOrWhiteSpace(newNotes) ? null : newNotes.Trim();
+    }
+
+    public override string ToString()
+    {
+        return $"{Name}: ${Amount}";
+    }
+
+
+    internal static Expense Hydrate(Guid id, string name, decimal amount, ExpenseCategory category, string? notes, DateTime createdAt)
+    {
+        var e = new Expense(name, amount, category, notes);
         e.Id = id;
+        e.CreatedAt = createdAt;
         return e;
     }
 }

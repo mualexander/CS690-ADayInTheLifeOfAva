@@ -11,7 +11,24 @@
         "Country": "Japan",
         "StartDate": null,
         "EndDate": null,
-        "Expenses": [],
+        "Expenses": [
+          {
+            "Id": "b8ebbf33-a446-4f55-bd06-cb44ce66878e",
+            "Name": "Meals",
+            "Amount": 1000,
+            "Category": "Food",
+            "Note": "Heavy on ramen and curry",
+            "CreatedAt": "2026-03-13T05:59:00.4347487Z"
+          },
+          {
+            "Id": "6d0bf2fe-da58-43c8-bad0-2321ae7fdd74",
+            "Name": "Taxis",
+            "Amount": 500,
+            "Category": "Transportation",
+            "Note": "Using the Go app",
+            "CreatedAt": "2026-03-13T05:59:28.8611203Z"
+          }
+        ],
         "Bookmarks": [
           {
             "Id": "16382b65-a6b7-4615-9a5e-f41051c31e13",

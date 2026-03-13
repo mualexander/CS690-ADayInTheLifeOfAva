@@ -61,10 +61,10 @@ public class TripTests
         var trip = new Trip("Japan", 1000m);
 
         var tokyoStay = trip.AddStay(new Place("Tokyo", "Japan"));
-        tokyoStay.AddExpense(DateTime.UtcNow.Date, 100m, ExpenseCategory.Food);
+        tokyoStay.AddExpense("Meals", 100m, ExpenseCategory.Food);
 
         var osakaStay = trip.AddStay(new Place("Osaka", "Japan"));
-        osakaStay.AddExpense(DateTime.UtcNow.Date, 50m, ExpenseCategory.Activities);
+        osakaStay.AddExpense("Meals", 50m, ExpenseCategory.Activities);
 
         Assert.Equal(150m, trip.TotalSpent());
         Assert.Equal(850m, trip.RemainingBudget());
@@ -76,7 +76,7 @@ public class TripTests
         var trip = new Trip("Japan", 100m);
 
         var stay = trip.AddStay(new Place("Tokyo", "Japan"));
-        stay.AddExpense(DateTime.UtcNow.Date, 150m, ExpenseCategory.Food);
+        stay.AddExpense("Meals", 150m, ExpenseCategory.Food);
 
         Assert.Equal(150m, trip.TotalSpent());
         Assert.Equal(-50m, trip.RemainingBudget());

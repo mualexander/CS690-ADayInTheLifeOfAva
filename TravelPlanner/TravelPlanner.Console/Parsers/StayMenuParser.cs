@@ -11,11 +11,10 @@ public static class StayMenuParser
         return cmd switch
         {
             "v" or "view" => StayMenuCommand.ViewStayDetails,
-            "a" or "add" => StayMenuCommand.AddExpense,
-            "r" or "remove" => StayMenuCommand.RemoveExpense,
             "p" or "place" => StayMenuCommand.SetPlace,
             "i" or "checkin" => StayMenuCommand.SetStartDate,
             "o" or "checkout" => StayMenuCommand.SetEndDate,
+            "e" or "expenses" => StayMenuCommand.ManageExpenses,
             "b" or "bookmarks" => StayMenuCommand.ManageBookmarks,
             "x" or "delete" => StayMenuCommand.DeleteStay,
             "q" or "back" => StayMenuCommand.Back,

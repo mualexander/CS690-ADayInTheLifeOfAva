@@ -16,6 +16,7 @@ var svc = new TripService(repo, ctx);
 
 var mode = AppMode.MainMenu;
 StaySummary? activeStay = null;
+ExpenseSummary? activeExpense = null;
 BookmarkSummary? activeBookmark = null;
 
 MenuRenderer.ShowMessage($"TravelPlanner (data: {DataPath})");
@@ -62,6 +63,50 @@ while (true)
                     activeBookmark = null;
                 }
                 break;
+
+            case AppMode.ExpenseMenu:
+                mode = HandleExpenseMenu(svc, activeStay, ref activeExpense);
+
+                if (mode == AppMode.StayMenu)
+                {
+                    activeExpense = null;
+                }
+                else if (mode == AppMode.TripMenu)
+                {
+                    activeStay = null;
+                    activeExpense = null;
+                }
+                else if (mode == AppMode.MainMenu)
+                {
+                    activeStay = null;
+                    activeExpense = null;
+                }
+                break;
+
+            case AppMode.ExpenseDetailMenu:
+                mode = HandleExpenseDetailMenu(svc, activeStay, ref activeExpense);
+
+                if (mode == AppMode.ExpenseMenu)
+                {
+                    // keep activeStay, clear expense selection
+                    activeExpense = null;
+                }
+                else if (mode == AppMode.StayMenu)
+                {
+                    activeExpense = null;
+                }
+                else if (mode == AppMode.TripMenu)
+                {
+                    activeStay = null;
+                    activeExpense = null;
+                }
+                else if (mode == AppMode.MainMenu)
+                {
+                    activeStay = null;
+                    activeExpense = null;
+                }
+                break;
+
 
             case AppMode.BookmarkMenu:
                 mode = HandleBookmarkMenu(svc, activeStay, ref activeBookmark);
@@ -213,10 +258,8 @@ static AppMode HandleStayMenu(TripService svc, ref StaySummary? activeStay)
             MenuRenderer.ShowStayDetails(activeStay);
             return AppMode.StayMenu;
 
-        case StayMenuCommand.AddExpense:
-            AddExpenseToStay(svc, activeStay);
-            activeStay = RefreshActiveStay(svc, activeStay.Id);
-            return AppMode.StayMenu;
+        case StayMenuCommand.ManageExpenses:
+            return AppMode.ExpenseMenu;
 
         case StayMenuCommand.ManageBookmarks:
             return AppMode.BookmarkMenu;
@@ -247,6 +290,103 @@ static AppMode HandleStayMenu(TripService svc, ref StaySummary? activeStay)
             return AppMode.StayMenu;
     }
 }
+
+static AppMode HandleExpenseMenu(TripService svc, StaySummary? activeStay, ref ExpenseSummary? activeExpense)
+{
+    if (activeStay is null)
+    {
+        MenuRenderer.ShowMessage("No active stay selected.");
+        return AppMode.TripMenu;
+    }
+
+    MenuRenderer.ShowExpenseMenu();
+    var command = ExpenseMenuParser.Parse(Console.ReadLine());
+    MenuRenderer.BlankLine();
+
+    switch (command)
+    {
+        case ExpenseMenuCommand.ListExpenses:
+            ListExpenses(svc, activeStay);
+            return AppMode.ExpenseMenu;
+
+        case ExpenseMenuCommand.AddExpense:
+            AddExpense(svc, activeStay);
+            return AppMode.ExpenseMenu;
+
+        case ExpenseMenuCommand.SelectExpense:
+            activeExpense = SelectExpense(svc, activeStay);
+            return activeExpense is null ? AppMode.ExpenseMenu : AppMode.ExpenseDetailMenu;
+
+        case ExpenseMenuCommand.DeleteExpense:
+            DeleteExpense(svc, activeStay);
+            activeExpense = null;
+            return AppMode.ExpenseMenu;
+
+        case ExpenseMenuCommand.Back:
+            activeExpense = null;
+            return AppMode.StayMenu;
+
+        case ExpenseMenuCommand.Unknown:
+        default:
+            MenuRenderer.ShowMessage("Unknown choice.");
+            return AppMode.ExpenseMenu;
+    }
+}
+
+static AppMode HandleExpenseDetailMenu(
+    TripService svc,
+    StaySummary? activeStay,
+    ref ExpenseSummary? activeExpense)
+{
+    if (activeStay is null)
+    {
+        MenuRenderer.ShowMessage("No active stay selected.");
+        return AppMode.TripMenu;
+    }
+
+    if (activeExpense is null)
+    {
+        MenuRenderer.ShowMessage("No active Expense selected.");
+        return AppMode.ExpenseMenu;
+    }
+
+    MenuRenderer.ShowExpenseDetailMenu();
+    var command = ExpenseDetailMenuParser.Parse(Console.ReadLine());
+    MenuRenderer.BlankLine();
+
+    switch (command)
+    {
+        case ExpenseDetailMenuCommand.ViewDetails:
+            MenuRenderer.ShowExpenseDetails(activeExpense);
+            return AppMode.ExpenseDetailMenu;
+
+        case ExpenseDetailMenuCommand.Rename:
+            RenameExpense(svc, activeStay, ref activeExpense);
+            return activeExpense is null ? AppMode.ExpenseMenu : AppMode.ExpenseDetailMenu;
+
+        case ExpenseDetailMenuCommand.UpdateAmount:
+            UpdateExpenseAmount(svc, activeStay, ref activeExpense);
+            return activeExpense is null ? AppMode.ExpenseMenu : AppMode.ExpenseDetailMenu;
+
+        case ExpenseDetailMenuCommand.UpdateNotes:
+            UpdateExpenseNotes(svc, activeStay, ref activeExpense);
+            return activeExpense is null ? AppMode.ExpenseMenu : AppMode.ExpenseDetailMenu;
+
+        case ExpenseDetailMenuCommand.Delete:
+            DeleteActiveExpense(svc, activeStay, ref activeExpense);
+            return AppMode.ExpenseMenu;
+
+        case ExpenseDetailMenuCommand.Back:
+            activeExpense = null;
+            return AppMode.ExpenseMenu;
+
+        case ExpenseDetailMenuCommand.Unknown:
+        default:
+            MenuRenderer.ShowMessage("Unknown choice.");
+            return AppMode.ExpenseDetailMenu;
+    }
+}
+
 
 static AppMode HandleBookmarkMenu(TripService svc, StaySummary? activeStay, ref BookmarkSummary? activeBookmark)
 {
@@ -494,35 +634,206 @@ static void DeleteActiveStay(TripService svc, ref StaySummary? activeStay)
 
 static void AddExpenseToStay(TripService svc, StaySummary activeStay)
 {
-    Console.Write("Expense date (YYYY-MM-DD) [blank=today]: ");
-    var dateStr = (Console.ReadLine() ?? "").Trim();
-    var date = string.IsNullOrWhiteSpace(dateStr) ? DateTime.UtcNow.Date : ParseDate(dateStr);
+    Console.Write("Expense name: ");
+    var name = (Console.ReadLine() ?? "").Trim();
 
     Console.Write("Amount (e.g. 25.50): ");
     var amtStr = (Console.ReadLine() ?? "").Trim();
     if (!decimal.TryParse(amtStr, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
         throw new ArgumentException("Invalid amount.");
 
-    Console.WriteLine("Category:");
-    foreach (var cat in Enum.GetValues<ExpenseCategory>())
-        Console.WriteLine($"- {cat}");
-
-    Console.Write("Enter category: ");
-    var catStr = (Console.ReadLine() ?? "").Trim();
-
-    if (!Enum.TryParse<ExpenseCategory>(catStr, ignoreCase: true, out var category))
-        category = ExpenseCategory.Other;
+    var category = PromptExpenseCategory();
 
     Console.Write("Note (optional): ");
     var note = Console.ReadLine();
 
-    svc.AddExpenseToStay(activeStay.Id, date, amount, category, note);
+    svc.AddExpenseToStay(activeStay.Id, name, amount, category, note);
     MenuRenderer.ShowMessage("Expense added.");
 }
 
 static StaySummary? RefreshActiveStay(TripService svc, Guid stayId)
 {
     return svc.GetStays().FirstOrDefault(s => s.Id == stayId);
+}
+
+static ExpenseCategory PromptExpenseCategory()
+{
+    var categories = Enum.GetValues<ExpenseCategory>();
+
+    while (true)
+    {
+        Console.WriteLine("Expense categories:");
+        for (int i = 0; i < categories.Length; i++)
+        {
+            Console.WriteLine($"{i + 1}. {categories[i]}");
+        }
+
+        Console.Write("Choose category #: ");
+        var input = (Console.ReadLine() ?? "").Trim();
+
+        if (int.TryParse(input, out var index) &&
+            index >= 1 &&
+            index <= categories.Length)
+        {
+            return categories[index - 1];
+        }
+
+        if (Enum.TryParse<ExpenseCategory>(input, ignoreCase: true, out var category))
+        {
+            return category;
+        }
+
+        Console.WriteLine("Invalid category. Try again.");
+        Console.WriteLine();
+    }
+}
+
+static void ListExpenses(TripService svc, StaySummary activeStay)
+{
+    var expenses = svc.GetExpensesForStay(activeStay.Id);
+    MenuRenderer.ShowExpenses(expenses);
+}
+
+static void AddExpense(TripService svc, StaySummary activeStay)
+{
+    Console.Write("Expense name: ");
+    var name = (Console.ReadLine() ?? "").Trim();
+
+    Console.Write("Amount (e.g. 25.50): ");
+    var amtStr = (Console.ReadLine() ?? "").Trim();
+    if (!decimal.TryParse(amtStr, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
+        throw new ArgumentException("Invalid amount.");
+
+    var category = PromptExpenseCategory();
+
+    Console.Write("Notes (optional): ");
+    var notes = Console.ReadLine();
+
+    svc.AddExpenseToStay(activeStay.Id, name, amount, category, notes);
+
+    MenuRenderer.ShowMessage("Expense added.");
+}
+
+static ExpenseSummary RequireActiveExpense(ExpenseSummary? activeExpense)
+{
+    return activeExpense ?? throw new InvalidOperationException("No active expense selected.");
+}
+
+static void DeleteExpense(TripService svc, StaySummary activeStay)
+{
+    var expenses = svc.GetExpensesForStay(activeStay.Id);
+
+    if (expenses.Count == 0)
+        throw new InvalidOperationException("No expenses found.");
+
+    MenuRenderer.ShowExpenses(expenses);
+
+    Console.Write("Select expense #: ");
+    var input = (Console.ReadLine() ?? "").Trim();
+
+    if (!int.TryParse(input, out var idx) || idx < 1 || idx > expenses.Count)
+        throw new ArgumentException("Invalid selection.");
+
+    var selected = expenses[idx - 1];
+
+    Console.Write($"Type DELETE to remove '{selected.Name}': ");
+    var confirm = (Console.ReadLine() ?? "").Trim();
+
+    if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+    {
+        MenuRenderer.ShowMessage("Delete cancelled.");
+        return;
+    }
+
+    svc.DeleteExpense(activeStay.Id, selected.Id);
+    MenuRenderer.ShowMessage("Expense deleted.");
+}
+
+static ExpenseSummary? SelectExpense(TripService svc, StaySummary activeStay)
+{
+    var expenses = svc.GetExpensesForStay(activeStay.Id);
+
+    if (expenses.Count == 0)
+        throw new InvalidOperationException("No expenses found.");
+
+    MenuRenderer.ShowExpenses(expenses);
+
+    Console.Write("Select expense #: ");
+    var input = (Console.ReadLine() ?? "").Trim();
+
+    if (!int.TryParse(input, out var idx) || idx < 1 || idx > expenses.Count)
+        throw new ArgumentException("Invalid selection.");
+
+    var selected = expenses[idx - 1];
+    MenuRenderer.ShowMessage($"Selected expense: {selected.Name}");
+
+    return selected;
+}
+
+static void RenameExpense(TripService svc, StaySummary activeStay, ref ExpenseSummary? activeExpense)
+{
+    var expense = RequireActiveExpense(activeExpense);
+
+    Console.Write("New expense title: ");
+    var newTitle = (Console.ReadLine() ?? "").Trim();
+
+    svc.UpdateExpenseTitle(activeStay.Id, expense.Id, newTitle);
+    activeExpense = RefreshActiveExpense(svc, activeStay.Id, expense.Id);
+
+    MenuRenderer.ShowMessage("Expense title updated.");
+}
+
+static void UpdateExpenseAmount(TripService svc, StaySummary activeStay, ref ExpenseSummary? activeExpense)
+{
+    var expense = RequireActiveExpense(activeExpense);
+
+    Console.Write("New amount (e.g. 25.50): ");
+    var amtStr = (Console.ReadLine() ?? "").Trim();
+    if (!decimal.TryParse(amtStr, NumberStyles.Number, CultureInfo.InvariantCulture, out var newAmount))
+        throw new ArgumentException("Invalid amount.");
+
+    svc.UpdateExpenseAmount(activeStay.Id, expense.Id, newAmount);
+    activeExpense = RefreshActiveExpense(svc, activeStay.Id, expense.Id);
+
+    MenuRenderer.ShowMessage("Expense URL updated.");
+}
+
+static void UpdateExpenseNotes(TripService svc, StaySummary activeStay, ref ExpenseSummary? activeExpense)
+{
+    var expense = RequireActiveExpense(activeExpense);
+
+    Console.Write("New notes (blank clears notes): ");
+    var newNotes = Console.ReadLine();
+
+    svc.UpdateExpenseNotes(activeStay.Id, expense.Id, newNotes);
+    activeExpense = RefreshActiveExpense(svc, activeStay.Id, expense.Id);
+
+    MenuRenderer.ShowMessage("Expense notes updated.");
+}
+
+static void DeleteActiveExpense(TripService svc, StaySummary activeStay, ref ExpenseSummary? activeExpense)
+{
+    if (activeExpense is null)
+        throw new InvalidOperationException("No active expense selected.");
+
+    Console.Write($"Type DELETE to remove '{activeExpense.Name}': ");
+    var confirm = (Console.ReadLine() ?? "").Trim();
+
+    if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+    {
+        MenuRenderer.ShowMessage("Delete cancelled.");
+        return;
+    }
+
+    svc.DeleteExpense(activeStay.Id, activeExpense.Id);
+    activeExpense = null;
+
+    MenuRenderer.ShowMessage("Expense deleted.");
+}
+
+static ExpenseSummary? RefreshActiveExpense(TripService svc, Guid stayId, Guid expenseId)
+{
+    return svc.GetExpensesForStay(stayId).FirstOrDefault(b => b.Id == expenseId);
 }
 
 static void ListBookmarks(TripService svc, StaySummary activeStay)
@@ -678,7 +989,7 @@ static void SeedDemoData(TripService svc)
 
     var stays = svc.GetStays();
     if (stays.Count > 0)
-        svc.AddExpenseToStay(stays[0].Id, DateTime.UtcNow.Date, 180m, ExpenseCategory.Food, "Sushi + ramen");
+        svc.AddExpenseToStay(stays[0].Id, "Meals", 180m, ExpenseCategory.Food, "Sushi + ramen");
 
     MenuRenderer.ShowMessage("Seeded demo trip.");
 }
