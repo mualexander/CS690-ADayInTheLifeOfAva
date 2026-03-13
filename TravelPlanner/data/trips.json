@@ -14,13 +14,22 @@
         "Expenses": [],
         "Bookmarks": [
           {
-            "Id": "6ee39ac2-bd46-4ab2-88c1-99ebadac3a3f",
-            "Title": "Famous Ramen Shops",
-            "Url": "https://www.5amramen.com/post/hiroshima-ramen-3-famous-shops",
-            "Notes": "5amramen.com 3 famous ramen shops",
-            "CreatedAt": "2026-03-13T02:43:40.3824438Z"
+            "Id": "16382b65-a6b7-4615-9a5e-f41051c31e13",
+            "Title": "Cocktail Bars in Hiroshima",
+            "Url": "https://www.reddit.com/r/JapanTravelTips/comments/1nuvsn3/cocktail_bars_in_hiroshima/",
+            "Notes": "Reddit thread on cocktail bars",
+            "CreatedAt": "2026-03-13T03:37:55.4581125Z"
           }
         ]
+      },
+      {
+        "Id": "4110a6bf-ebb0-4d84-a742-da108e3b0d2e",
+        "City": "Nara",
+        "Country": "Japan",
+        "StartDate": null,
+        "EndDate": null,
+        "Expenses": [],
+        "Bookmarks": []
       }
     ]
   }

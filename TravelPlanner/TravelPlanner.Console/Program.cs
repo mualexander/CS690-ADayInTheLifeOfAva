@@ -313,6 +313,10 @@ static AppMode HandleBookmarkDetailMenu(
             UpdateBookmarkNotes(svc, activeStay, ref activeBookmark);
             return activeBookmark is null ? AppMode.BookmarkMenu : AppMode.BookmarkDetailMenu;
 
+        case BookmarkDetailMenuCommand.Delete:
+            DeleteActiveBookmark(svc, activeStay, ref activeBookmark);
+            return AppMode.BookmarkMenu;
+
         case BookmarkDetailMenuCommand.Back:
             activeBookmark = null;
             return AppMode.BookmarkMenu;
@@ -550,6 +554,26 @@ static void UpdateBookmarkNotes(TripService svc, StaySummary activeStay, ref Boo
     activeBookmark = RefreshActiveBookmark(svc, activeStay.Id, bookmark.Id);
 
     MenuRenderer.ShowMessage("Bookmark notes updated.");
+}
+
+static void DeleteActiveBookmark(TripService svc, StaySummary activeStay, ref BookmarkSummary? activeBookmark)
+{
+    if (activeBookmark is null)
+        throw new InvalidOperationException("No active bookmark selected.");
+
+    Console.Write($"Type DELETE to remove '{activeBookmark.Title}': ");
+    var confirm = (Console.ReadLine() ?? "").Trim();
+
+    if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+    {
+        MenuRenderer.ShowMessage("Delete cancelled.");
+        return;
+    }
+
+    svc.DeleteBookmark(activeStay.Id, activeBookmark.Id);
+    activeBookmark = null;
+
+    MenuRenderer.ShowMessage("Bookmark deleted.");
 }
 
 static BookmarkSummary? RefreshActiveBookmark(TripService svc, Guid stayId, Guid bookmarkId)

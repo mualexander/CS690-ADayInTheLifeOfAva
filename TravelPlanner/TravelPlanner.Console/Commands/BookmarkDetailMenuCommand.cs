@@ -7,5 +7,6 @@ public enum BookmarkDetailMenuCommand
     Rename,
     UpdateUrl,
     UpdateNotes,
+    Delete,
     Back
 }

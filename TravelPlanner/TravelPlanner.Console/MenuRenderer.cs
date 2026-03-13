@@ -81,7 +81,7 @@ public static class MenuRenderer
             ("L", "List bookmarks"),
             ("A", "Add bookmark"),
             ("S", "Select bookmark"),
-            ("D", "Delete bookmark"),
+            ("X", "Delete bookmark"),
             ("Q", "Back")
         );
     }
@@ -94,6 +94,7 @@ public static class MenuRenderer
             ("R", "Rename bookmark"),
             ("U", "Update URL"),
             ("N", "Update notes"),
+            ("X", "Delete bookmark"),
             ("Q", "Back")
         );
     }
