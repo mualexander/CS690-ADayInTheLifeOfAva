@@ -63,11 +63,12 @@ public static class MenuRenderer
         ShowMenu(
             "Stay Menu",
             ("V", "View stay details"),
+            ("E", "Expenses"),
+            ("B", "Bookmarks"),
+            ("F", "Flights"),
             ("P", "Set place"),
             ("I", "Set start date"),
             ("O", "Set end date"),
-            ("E", "Expenses"),
-            ("B", "Bookmarks"),
             ("X", "Delete stay"),
             ("Q", "Back")
         );
@@ -118,6 +119,27 @@ public static class MenuRenderer
             ("U", "Update URL"),
             ("N", "Update notes"),
             ("X", "Delete bookmark"),
+            ("Q", "Back")
+        );
+    }
+
+    public static void ShowFlightOptionMenu()
+    {
+        ShowMenu(
+            "Flight Option Menu",
+            ("L", "List flight options"),
+            ("A", "Add flight option"),
+            ("S", "Select flight option"),
+            ("D", "Delete flight option"),
+            ("Q", "Back")
+        );
+    }
+
+    public static void ShowFlightOptionDetailMenu()
+    {
+        ShowMenu(
+            "Flight Option Detail Menu",
+            ("V", "View flight option details"),
             ("Q", "Back")
         );
     }
@@ -240,6 +262,38 @@ public static class MenuRenderer
         WriteLine($"URL:       {bookmark.Url}");
         WriteLine($"CreatedAt: {bookmark.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
         WriteLine($"Notes:     {bookmark.Notes ?? "(none)"}");
+    }
+
+    public static void ShowFlightOptions(IReadOnlyList<FlightOptionSummary> options)
+    {
+        WriteTitle("Flight Options");
+
+        if (options.Count == 0)
+        {
+            WriteLine("(no flight options yet)");
+            return;
+        }
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            var f = options[i];
+            WriteLine(
+                $"{i + 1}. {f.FromAirportCode} -> {f.ToAirportCode} | " +
+                $"{f.DepartTime:yyyy-MM-dd HH:mm} -> {f.ArriveTime:yyyy-MM-dd HH:mm}"
+            );
+        }
+    }
+
+    public static void ShowFlightOptionDetails(FlightOptionSummary option)
+    {
+        WriteTitle("Flight Option Details");
+        WriteLine($"Route:        {option.FromAirportCode} -> {option.ToAirportCode}");
+        WriteLine($"Depart:       {option.DepartTime:yyyy-MM-dd HH:mm}");
+        WriteLine($"Arrive:       {option.ArriveTime:yyyy-MM-dd HH:mm}");
+        WriteLine($"URL:          {option.Url}");
+        WriteLine($"CreatedAt:    {option.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
+        WriteLine($"LastChecked:  {(option.LastCheckedAt.HasValue ? option.LastCheckedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "(never)")}");
+        WriteLine($"Selected:     {option.IsSelected}");
     }
 
     public static void ShowError(string message)

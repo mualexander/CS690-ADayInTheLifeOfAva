@@ -572,4 +572,107 @@ public class TripServiceTests
             svc.UpdateBookmarkTitle(stayId, Guid.NewGuid(), "New Title"));
     }
     #endregion
+    #region FlightOption Tests
+    [Fact]
+    public void AddFlightOptionToStay_AddsFlightOption()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("California Trip", 2000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Santa Cruz", "USA");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(
+            stayId,
+            "https://example.com/flight",
+            "LAX",
+            "SJC",
+            new DateTime(2026, 3, 10, 8, 0, 0),
+            new DateTime(2026, 3, 10, 9, 30, 0));
+
+        var options = svc.GetFlightOptionsForStay(stayId);
+
+        Assert.Single(options);
+        Assert.Equal("LAX", options[0].FromAirportCode);
+        Assert.Equal("SJC", options[0].ToAirportCode);
+    }
+
+    [Fact]
+    public void DeleteFlightOption_RemovesFlightOption()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("California Trip", 2000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Santa Cruz", "USA");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(
+            stayId,
+            "https://example.com/flight",
+            "LAX",
+            "SJC",
+            new DateTime(2026, 3, 10, 8, 0, 0),
+            new DateTime(2026, 3, 10, 9, 30, 0));
+
+        var optionId = svc.GetFlightOptionsForStay(stayId).Single().Id;
+
+        svc.DeleteFlightOption(stayId, optionId);
+
+        Assert.Empty(svc.GetFlightOptionsForStay(stayId));
+    }
+
+    [Fact]
+    public void FlightOptions_PersistAcrossFileRepositoryReload()
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
+
+        try
+        {
+            var repo1 = new FileTripRepository(tempFile);
+            var ctx1 = new InMemoryTripContext(repo1);
+            var svc1 = new TripService(repo1, ctx1);
+
+            var trip = svc1.CreateTrip("California Trip", 2000m);
+            svc1.SelectTrip(trip.Id);
+            svc1.AddStay("Santa Cruz", "USA");
+
+            var stayId = svc1.GetStays().Single().Id;
+
+            svc1.AddFlightOptionToStay(
+                stayId,
+                "https://example.com/flight",
+                "LAX",
+                "SJC",
+                new DateTime(2026, 3, 10, 8, 0, 0),
+                new DateTime(2026, 3, 10, 9, 30, 0));
+
+            var repo2 = new FileTripRepository(tempFile);
+            var reloadedTrip = repo2.GetById(trip.Id);
+
+            Assert.NotNull(reloadedTrip);
+
+            var reloadedStay = reloadedTrip!.Stays.Single();
+            var option = reloadedStay.FlightOptions.Single();
+
+            Assert.Equal("https://example.com/flight", option.Url);
+            Assert.Equal("LAX", option.FromAirportCode);
+            Assert.Equal("SJC", option.ToAirportCode);
+            Assert.Equal(new DateTime(2026, 3, 10, 8, 0, 0), option.DepartTime);
+            Assert.Equal(new DateTime(2026, 3, 10, 9, 30, 0), option.ArriveTime);
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+                File.Delete(tempFile);
+        }
+    }
+    #endregion
 }

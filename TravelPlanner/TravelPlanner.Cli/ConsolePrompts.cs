@@ -85,8 +85,6 @@ public static class ConsolePrompts
         return selected;
     }
 
-    public static StaySummary RequireActiveStay(StaySummary? activeStay) =>
-        activeStay ?? throw new InvalidOperationException("No active stay selected.");
 
     public static void SetStayPlace(TripService svc, ref StaySummary? activeStay)
     {
@@ -220,8 +218,6 @@ public static class ConsolePrompts
         return selected;
     }
 
-    public static ExpenseSummary RequireActiveExpense(ExpenseSummary? activeExpense) =>
-        activeExpense ?? throw new InvalidOperationException("No active expense selected.");
 
     public static void RenameExpense(TripService svc, StaySummary activeStay, ref ExpenseSummary? activeExpense)
     {
@@ -346,8 +342,6 @@ public static class ConsolePrompts
         return selected;
     }
 
-    public static BookmarkSummary RequireActiveBookmark(BookmarkSummary? activeBookmark) =>
-        activeBookmark ?? throw new InvalidOperationException("No active bookmark selected.");
 
     public static void RenameBookmark(TripService svc, StaySummary activeStay, ref BookmarkSummary? activeBookmark)
     {
@@ -407,6 +401,107 @@ public static class ConsolePrompts
         MenuRenderer.ShowMessage("Bookmark deleted.");
     }
 
+    public static void AddFlightOption(TripService svc, StaySummary activeStay)
+    {
+        Console.Write("Flight option URL: ");
+        var url = (Console.ReadLine() ?? "").Trim();
+
+        Console.Write("From airport code: ");
+        var fromAirportCode = (Console.ReadLine() ?? "").Trim();
+
+        Console.Write("To airport code: ");
+        var toAirportCode = (Console.ReadLine() ?? "").Trim();
+
+        Console.Write("Depart time (YYYY-MM-DD HH:mm): ");
+        var departInput = (Console.ReadLine() ?? "").Trim();
+
+        Console.Write("Arrive time (YYYY-MM-DD HH:mm): ");
+        var arriveInput = (Console.ReadLine() ?? "").Trim();
+
+        var departTime = ParseDateTime(departInput);
+        var arriveTime = ParseDateTime(arriveInput);
+
+        svc.AddFlightOptionToStay(
+            activeStay.Id,
+            url,
+            fromAirportCode,
+            toAirportCode,
+            departTime,
+            arriveTime);
+
+        MenuRenderer.ShowMessage("Flight option added.");
+    }
+
+    public static void DeleteFlightOption(TripService svc, StaySummary activeStay)
+    {
+        var options = svc.GetFlightOptionsForStay(activeStay.Id);
+        if (options.Count == 0)
+            throw new InvalidOperationException("No flight options found.");
+
+        MenuRenderer.ShowFlightOptions(options);
+
+        Console.Write("Select flight option #: ");
+        var input = (Console.ReadLine() ?? "").Trim();
+
+        if (!int.TryParse(input, out var idx) || idx < 1 || idx > options.Count)
+            throw new ArgumentException("Invalid selection.");
+
+        var selected = options[idx - 1];
+
+        Console.Write($"Type DELETE to remove {selected.FromAirportCode}->{selected.ToAirportCode}: ");
+        var confirm = (Console.ReadLine() ?? "").Trim();
+
+        if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+        {
+            MenuRenderer.ShowMessage("Delete cancelled.");
+            return;
+        }
+
+        svc.DeleteFlightOption(activeStay.Id, selected.Id);
+        MenuRenderer.ShowMessage("Flight option deleted.");
+    }
+
+    public static FlightOptionSummary SelectFlightOption(TripService svc, StaySummary activeStay)
+    {
+        var options = svc.GetFlightOptionsForStay(activeStay.Id);
+        if (options.Count == 0)
+            throw new InvalidOperationException("No flight options found.");
+
+        MenuRenderer.ShowFlightOptions(options);
+
+        Console.Write("Select flight option #: ");
+        var input = (Console.ReadLine() ?? "").Trim();
+
+        if (!int.TryParse(input, out var idx) || idx < 1 || idx > options.Count)
+            throw new ArgumentException("Invalid selection.");
+
+        var selected = options[idx - 1];
+        MenuRenderer.ShowMessage($"Selected flight option: {selected.FromAirportCode} -> {selected.ToAirportCode}");
+        return selected;
+    }
+
+    public static void DeleteActiveFlightOption(
+        TripService svc,
+        StaySummary activeStay,
+        ref FlightOptionSummary? activeFlightOption)
+    {
+        var option = RequireActiveFlightOption(activeFlightOption);
+
+        Console.Write($"Type DELETE to remove {option.FromAirportCode}->{option.ToAirportCode}: ");
+        var confirm = (Console.ReadLine() ?? "").Trim();
+
+        if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+        {
+            MenuRenderer.ShowMessage("Delete cancelled.");
+            return;
+        }
+
+        svc.DeleteFlightOption(activeStay.Id, option.Id);
+        activeFlightOption = null;
+
+        MenuRenderer.ShowMessage("Flight option deleted.");
+    }
+
     public static void SeedDemoData(TripService svc)
     {
         var trip = svc.CreateTrip("Seed: Japan 2026", 5000m);
@@ -431,6 +526,10 @@ public static class ConsolePrompts
 
     public static BookmarkSummary? RefreshActiveBookmark(TripService svc, Guid stayId, Guid bookmarkId) =>
         svc.GetBookmarksForStay(stayId).FirstOrDefault(b => b.Id == bookmarkId);
+
+    public static FlightOptionSummary? RefreshActiveFlightOption(TripService svc, Guid stayId, Guid flightOptionId) =>
+        svc.GetFlightOptionsForStay(stayId).FirstOrDefault(f => f.Id == flightOptionId);
+
 
     public static DateTime ParseDate(string s)
     {
@@ -470,5 +569,33 @@ public static class ConsolePrompts
             Console.WriteLine("Invalid category. Try again.");
             Console.WriteLine();
         }
+    }
+
+    public static StaySummary RequireActiveStay(StaySummary? activeStay) =>
+        activeStay ?? throw new InvalidOperationException("No active stay selected.");
+
+    public static ExpenseSummary RequireActiveExpense(ExpenseSummary? activeExpense) =>
+        activeExpense ?? throw new InvalidOperationException("No active expense selected.");
+
+    public static BookmarkSummary RequireActiveBookmark(BookmarkSummary? activeBookmark) =>
+        activeBookmark ?? throw new InvalidOperationException("No active bookmark selected.");
+
+    public static FlightOptionSummary RequireActiveFlightOption(FlightOptionSummary? activeFlightOption) =>
+        activeFlightOption ?? throw new InvalidOperationException("No active flight option selected.");
+
+
+    public static DateTime ParseDateTime(string s)
+    {
+        if (!DateTime.TryParseExact(
+                s,
+                "yyyy-MM-dd HH:mm",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var dt))
+        {
+            throw new ArgumentException("Invalid date/time format. Use YYYY-MM-DD HH:mm.");
+        }
+
+        return dt;
     }
 }

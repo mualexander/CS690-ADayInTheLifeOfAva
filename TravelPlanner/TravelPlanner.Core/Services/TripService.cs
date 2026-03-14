@@ -291,5 +291,51 @@ public class TripService
         _repository.Update(trip);
     }
 
+    // FlightOptions
+    public void AddFlightOptionToStay(
+        Guid stayId,
+        string url,
+        string fromAirportCode,
+        string toAirportCode,
+        DateTime departTime,
+        DateTime arriveTime)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
 
+        stay.AddFlightOption(url, fromAirportCode, toAirportCode, departTime, arriveTime);
+
+        _repository.Update(trip);
+    }
+
+    public IReadOnlyList<FlightOptionSummary> GetFlightOptionsForStay(Guid stayId)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        return stay.FlightOptions
+            .OrderBy(f => f.DepartTime)
+            .Select(f => new FlightOptionSummary(
+                f.Id,
+                f.Url,
+                f.CreatedAt,
+                f.LastCheckedAt,
+                f.IsSelected,
+                f.FromAirportCode,
+                f.ToAirportCode,
+                f.DepartTime,
+                f.ArriveTime
+            ))
+            .ToList();
+    }
+
+    public void DeleteFlightOption(Guid stayId, Guid flightOptionId)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        stay.RemoveFlightOption(flightOptionId);
+
+        _repository.Update(trip);
+    }
 }

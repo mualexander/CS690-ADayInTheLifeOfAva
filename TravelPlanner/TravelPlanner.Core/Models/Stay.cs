@@ -18,6 +18,9 @@ public class Stay
     private readonly List<Bookmark> _bookmarks = new();
     public IReadOnlyCollection<Bookmark> Bookmarks => _bookmarks.AsReadOnly();
 
+    private readonly List<FlightOption> _flightOptions = new();
+    public IReadOnlyCollection<FlightOption> FlightOptions => _flightOptions.AsReadOnly();
+
     public Stay(Place place)
     {
         Place = place ?? throw new ArgumentNullException(nameof(place));
@@ -183,6 +186,39 @@ public class Stay
             ?? throw new InvalidOperationException("Bookmark not found.");
     }
 
+    public FlightOption AddFlightOption(
+        string url,
+        string fromAirportCode,
+        string toAirportCode,
+        DateTime departTime,
+        DateTime arriveTime)
+    {
+        var option = new FlightOption(
+            url,
+            fromAirportCode,
+            toAirportCode,
+            departTime,
+            arriveTime);
+
+        _flightOptions.Add(option);
+        return option;
+    }
+
+    public void RemoveFlightOption(Guid flightOptionId)
+    {
+        var option = _flightOptions.FirstOrDefault(f => f.Id == flightOptionId);
+        if (option == null)
+            throw new InvalidOperationException("Flight option not found.");
+
+        _flightOptions.Remove(option);
+    }
+
+    public FlightOption GetFlightOption(Guid flightOptionId)
+    {
+        return _flightOptions.FirstOrDefault(f => f.Id == flightOptionId)
+            ?? throw new InvalidOperationException("Flight option not found.");
+    }
+
     internal static Stay Hydrate(Guid id, Place place, DateTime? start, DateTime? end)
     {
         var stay = new Stay(place);
@@ -202,5 +238,10 @@ public class Stay
     internal void HydrateAddBookmark(Bookmark bookmark)
     {
         _bookmarks.Add(bookmark);
+    }
+
+    internal void HydrateAddFlightOption(FlightOption option)
+    {
+        _flightOptions.Add(option);
     }
 }

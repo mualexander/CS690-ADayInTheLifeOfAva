@@ -228,4 +228,66 @@ public class StayTests
     }
 
     #endregion
+
+    #region FlightOption Tests
+    [Fact]
+    public void AddFlightOption_AddsFlightOption()
+    {
+        var stay = new Stay(new Place("Santa Cruz", "USA"));
+
+        var option = stay.AddFlightOption(
+            "https://example.com/flight",
+            "SFO",
+            "SJC",
+            new DateTime(2026, 3, 10, 8, 0, 0),
+            new DateTime(2026, 3, 10, 9, 30, 0));
+
+        Assert.Single(stay.FlightOptions);
+        Assert.Equal("SFO", option.FromAirportCode);
+        Assert.Equal("SJC", option.ToAirportCode);
+    }
+
+    [Fact]
+    public void RemoveFlightOption_RemovesExistingFlightOption()
+    {
+        var stay = new Stay(new Place("Santa Cruz", "USA"));
+        var option = stay.AddFlightOption(
+            "https://example.com/flight",
+            "SFO",
+            "SJC",
+            new DateTime(2026, 3, 10, 8, 0, 0),
+            new DateTime(2026, 3, 10, 9, 30, 0));
+
+        stay.RemoveFlightOption(option.Id);
+
+        Assert.Empty(stay.FlightOptions);
+    }
+
+    [Fact]
+    public void RemoveFlightOption_ThrowsWhenMissing()
+    {
+        var stay = new Stay(new Place("Santa Cruz", "USA"));
+
+        Assert.Throws<InvalidOperationException>(() =>
+            stay.RemoveFlightOption(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void GetFlightOption_ReturnsMatchingFlightOption()
+    {
+        var stay = new Stay(new Place("Santa Cruz", "USA"));
+        var option = stay.AddFlightOption(
+            "https://example.com/flight",
+            "LAX",
+            "SJC",
+            new DateTime(2026, 3, 10, 8, 0, 0),
+            new DateTime(2026, 3, 10, 9, 30, 0));
+
+        var found = stay.GetFlightOption(option.Id);
+
+        Assert.Equal(option.Id, found.Id);
+        Assert.Equal("LAX", found.FromAirportCode);
+        Assert.Equal("SJC", found.ToAirportCode);
+    }
+    #endregion
 }

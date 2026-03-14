@@ -12,6 +12,7 @@ public class ConsoleApplication
     private StaySummary? _activeStay;
     private ExpenseSummary? _activeExpense;
     private BookmarkSummary? _activeBookmark;
+    private FlightOptionSummary? _activeFlightOption;
 
     public ConsoleApplication(TripService svc, InMemoryTripContext ctx, string dataPath)
     {
@@ -41,6 +42,7 @@ public class ConsoleApplication
                             _activeStay = null;
                             _activeExpense = null;
                             _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         break;
 
@@ -52,6 +54,7 @@ public class ConsoleApplication
                             _activeStay = null;
                             _activeExpense = null;
                             _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         break;
 
@@ -62,12 +65,14 @@ public class ConsoleApplication
                         {
                             _activeExpense = null;
                             _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.MainMenu)
                         {
                             _activeStay = null;
                             _activeExpense = null;
                             _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         break;
 
@@ -77,16 +82,22 @@ public class ConsoleApplication
                         if (_mode == AppMode.StayMenu)
                         {
                             _activeExpense = null;
+                            _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.TripMenu)
                         {
                             _activeStay = null;
                             _activeExpense = null;
+                            _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.MainMenu)
                         {
                             _activeStay = null;
                             _activeExpense = null;
+                            _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         break;
 
@@ -96,20 +107,28 @@ public class ConsoleApplication
                         if (_mode == AppMode.ExpenseMenu)
                         {
                             _activeExpense = null;
+                            _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.StayMenu)
                         {
                             _activeExpense = null;
+                            _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.TripMenu)
                         {
                             _activeStay = null;
                             _activeExpense = null;
+                            _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.MainMenu)
                         {
                             _activeStay = null;
                             _activeExpense = null;
+                            _activeBookmark = null;
+                            _activeFlightOption = null;
                         }
                         break;
 
@@ -119,16 +138,22 @@ public class ConsoleApplication
                         if (_mode == AppMode.StayMenu)
                         {
                             _activeBookmark = null;
+                            _activeExpense = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.TripMenu)
                         {
                             _activeStay = null;
                             _activeBookmark = null;
+                            _activeExpense = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.MainMenu)
                         {
                             _activeStay = null;
                             _activeBookmark = null;
+                            _activeExpense = null;
+                            _activeFlightOption = null;
                         }
                         break;
 
@@ -138,20 +163,70 @@ public class ConsoleApplication
                         if (_mode == AppMode.BookmarkMenu)
                         {
                             _activeBookmark = null;
+                            _activeExpense = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.StayMenu)
                         {
                             _activeBookmark = null;
+                            _activeExpense = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.TripMenu)
                         {
                             _activeStay = null;
                             _activeBookmark = null;
+                            _activeExpense = null;
+                            _activeFlightOption = null;
                         }
                         else if (_mode == AppMode.MainMenu)
                         {
                             _activeStay = null;
                             _activeBookmark = null;
+                            _activeExpense = null;
+                            _activeFlightOption = null;
+                        }
+                        break;
+
+                    case AppMode.FlightOptionMenu:
+                        _mode = FlightOptionMenuFlow.Handle(_svc, _activeStay, ref _activeFlightOption);
+
+                        if (_mode == AppMode.StayMenu)
+                        {
+                            _activeFlightOption = null;
+                        }
+                        else if (_mode == AppMode.TripMenu)
+                        {
+                            _activeStay = null;
+                            _activeFlightOption = null;
+                        }
+                        else if (_mode == AppMode.MainMenu)
+                        {
+                            _activeStay = null;
+                            _activeFlightOption = null;
+                        }
+                        break;
+
+                    case AppMode.FlightOptionDetailMenu:
+                        _mode = FlightOptionDetailMenuFlow.Handle(_svc, _activeStay, ref _activeFlightOption);
+
+                        if (_mode == AppMode.FlightOptionMenu)
+                        {
+                            _activeFlightOption = null;
+                        }
+                        else if (_mode == AppMode.StayMenu)
+                        {
+                            _activeFlightOption = null;
+                        }
+                        else if (_mode == AppMode.TripMenu)
+                        {
+                            _activeStay = null;
+                            _activeFlightOption = null;
+                        }
+                        else if (_mode == AppMode.MainMenu)
+                        {
+                            _activeStay = null;
+                            _activeFlightOption = null;
                         }
                         break;
 

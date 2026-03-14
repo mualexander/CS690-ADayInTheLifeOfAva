@@ -8,5 +8,7 @@ public enum AppMode
     ExpenseMenu,
     ExpenseDetailMenu,
     BookmarkMenu,
-    BookmarkDetailMenu
+    BookmarkDetailMenu,
+    FlightOptionMenu,
+    FlightOptionDetailMenu
 }

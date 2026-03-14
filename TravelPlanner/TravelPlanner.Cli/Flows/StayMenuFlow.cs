@@ -30,6 +30,9 @@ public static class StayMenuFlow
             case StayMenuCommand.ManageBookmarks:
                 return AppMode.BookmarkMenu;
 
+            case StayMenuCommand.ManageFlightOptions:
+                return AppMode.FlightOptionMenu;
+
             case StayMenuCommand.SetPlace:
                 ConsolePrompts.SetStayPlace(svc, ref activeStay);
                 return AppMode.StayMenu;
