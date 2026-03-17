@@ -505,6 +505,34 @@ public static class ConsolePrompts
         MenuRenderer.ShowMessage("Flight option deleted.");
     }
 
+    public static void UpdateFlightOptionPrice(
+        TripService svc,
+        StaySummary activeStay,
+        ref FlightOptionSummary? activeFlightOption)
+    {
+        var option = RequireActiveFlightOption(activeFlightOption);
+
+        var newPrice = PromptOptionalPrice();
+
+        svc.UpdateFlightOptionPrice(activeStay.Id, option.Id, newPrice);
+        activeFlightOption = RefreshActiveFlightOption(svc, activeStay.Id, option.Id);
+
+        MenuRenderer.ShowMessage("Flight option price updated.");
+    }
+
+    public static void UpdateFlightOptionUrl(TripService svc, StaySummary activeStay, ref FlightOptionSummary? activeFlightOption)
+    {
+        var option = RequireActiveFlightOption(activeFlightOption);
+
+        Console.Write("New flight URL: ");
+        var newUrl = (Console.ReadLine() ?? "").Trim();
+
+        svc.UpdateFlightOptionUrl(activeStay.Id, option.Id, newUrl);
+        activeFlightOption = RefreshActiveFlightOption(svc, activeStay.Id, option.Id);
+
+        MenuRenderer.ShowMessage("Flight URL updated.");
+    }
+
     public static void AddLodgingOption(TripService svc, StaySummary activeStay)
     {
         Console.Write("Lodging option URL: ");
@@ -604,6 +632,35 @@ public static class ConsolePrompts
 
         MenuRenderer.ShowMessage("Lodging option deleted.");
     }
+
+    public static void UpdateLodgingOptionPrice(
+        TripService svc,
+        StaySummary activeStay,
+        ref LodgingOptionSummary? activeLodgingOption)
+    {
+        var option = RequireActiveLodgingOption(activeLodgingOption);
+
+        var newPrice = PromptOptionalPrice();
+
+        svc.UpdateLodgingOptionPrice(activeStay.Id, option.Id, newPrice);
+        activeLodgingOption = RefreshActiveLodgingOption(svc, activeStay.Id, option.Id);
+
+        MenuRenderer.ShowMessage("Lodging option price updated.");
+    }
+
+    public static void UpdateLodgingOptionUrl(TripService svc, StaySummary activeStay, ref LodgingOptionSummary? activeLodgingOption)
+    {
+        var option = RequireActiveLodgingOption(activeLodgingOption);
+
+        Console.Write("New lodging URL: ");
+        var newUrl = (Console.ReadLine() ?? "").Trim();
+
+        svc.UpdateLodgingOptionUrl(activeStay.Id, option.Id, newUrl);
+        activeLodgingOption = RefreshActiveLodgingOption(svc, activeStay.Id, option.Id);
+
+        MenuRenderer.ShowMessage("Lodging URL updated.");
+    }
+
 
     public static decimal? PromptOptionalPrice()
     {

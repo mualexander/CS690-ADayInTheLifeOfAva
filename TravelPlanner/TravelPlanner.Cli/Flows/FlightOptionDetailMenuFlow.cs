@@ -33,6 +33,14 @@ public static class FlightOptionDetailMenuFlow
                 MenuRenderer.ShowFlightOptionDetails(activeFlightOption);
                 return AppMode.FlightOptionDetailMenu;
 
+            case FlightOptionDetailMenuCommand.UpdatePrice:
+                ConsolePrompts.UpdateFlightOptionPrice(svc, activeStay, ref activeFlightOption);
+                return activeFlightOption is null ? AppMode.FlightOptionMenu : AppMode.FlightOptionDetailMenu;
+
+            case FlightOptionDetailMenuCommand.UpdateUrl:
+                ConsolePrompts.UpdateFlightOptionUrl(svc, activeStay, ref activeFlightOption);
+                return activeFlightOption is null ? AppMode.FlightOptionMenu : AppMode.FlightOptionDetailMenu;
+
             case FlightOptionDetailMenuCommand.Back:
                 activeFlightOption = null;
                 return AppMode.FlightOptionMenu;

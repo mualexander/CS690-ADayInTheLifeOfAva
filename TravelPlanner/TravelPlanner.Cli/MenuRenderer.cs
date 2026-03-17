@@ -141,6 +141,8 @@ public static class MenuRenderer
         ShowMenu(
             "Flight Option Detail Menu",
             ("V", "View flight option details"),
+            ("P", "Update price"),
+            ("U", "Update URL"),
             ("Q", "Back")
         );
     }
@@ -162,6 +164,8 @@ public static class MenuRenderer
         ShowMenu(
             "Lodging Option Detail Menu",
             ("V", "View lodging option details"),
+            ("P", "Update price"),
+            ("U", "Update URL"),
             ("Q", "Back")
         );
     }

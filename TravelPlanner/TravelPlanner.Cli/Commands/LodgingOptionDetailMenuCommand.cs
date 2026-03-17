@@ -4,5 +4,7 @@ public enum LodgingOptionDetailMenuCommand
 {
     Unknown,
     ViewDetails,
+    UpdatePrice,
+    UpdateUrl,
     Back
 }

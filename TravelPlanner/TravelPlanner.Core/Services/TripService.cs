@@ -358,6 +358,28 @@ public class TripService
         _repository.Update(trip);
     }
 
+    public void UpdateFlightOptionPrice(Guid stayId, Guid flightOptionId, decimal? newPrice)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetFlightOption(flightOptionId);
+        option.UpdatePrice(newPrice);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateFlightOptionUrl(Guid stayId, Guid flightOptionId, string newUrl)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetFlightOption(flightOptionId);
+        option.UpdateUrl(newUrl);
+
+        _repository.Update(trip);
+    }
+
     // LodgingOptions
     public void AddLodgingOptionToStay(
         Guid stayId,
@@ -411,6 +433,28 @@ public class TripService
             ?? throw new InvalidOperationException("Stay not found.");
 
         stay.RemoveLodgingOption(lodgingOptionId);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateLodgingOptionPrice(Guid stayId, Guid lodgingOptionId, decimal? newPrice)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.UpdatePrice(newPrice);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateLodgingOptionUrl(Guid stayId, Guid lodgingOptionId, string newUrl)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.UpdateUrl(newUrl);
 
         _repository.Update(trip);
     }

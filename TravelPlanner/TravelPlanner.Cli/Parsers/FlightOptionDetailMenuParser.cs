@@ -11,6 +11,8 @@ public static class FlightOptionDetailMenuParser
         return cmd switch
         {
             "v" or "view" => FlightOptionDetailMenuCommand.ViewDetails,
+            "p" or "price" => FlightOptionDetailMenuCommand.UpdatePrice,
+            "u" or "url" => FlightOptionDetailMenuCommand.UpdateUrl,
             "q" or "back" => FlightOptionDetailMenuCommand.Back,
             _ => FlightOptionDetailMenuCommand.Unknown
         };

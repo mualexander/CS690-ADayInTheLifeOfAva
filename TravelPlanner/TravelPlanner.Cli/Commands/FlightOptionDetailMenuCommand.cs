@@ -4,5 +4,7 @@ public enum FlightOptionDetailMenuCommand
 {
     Unknown,
     ViewDetails,
+    UpdatePrice,
+    UpdateUrl,
     Back
 }

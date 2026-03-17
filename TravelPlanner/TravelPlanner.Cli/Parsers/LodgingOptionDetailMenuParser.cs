@@ -11,6 +11,8 @@ public static class LodgingOptionDetailMenuParser
         return cmd switch
         {
             "v" or "view" => LodgingOptionDetailMenuCommand.ViewDetails,
+            "p" or "price" => LodgingOptionDetailMenuCommand.UpdatePrice,
+            "u" or "url" => LodgingOptionDetailMenuCommand.UpdateUrl,
             "q" or "back" => LodgingOptionDetailMenuCommand.Back,
             _ => LodgingOptionDetailMenuCommand.Unknown
         };

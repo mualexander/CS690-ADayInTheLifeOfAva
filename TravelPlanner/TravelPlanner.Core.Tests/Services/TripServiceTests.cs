@@ -709,6 +709,39 @@ public class TripServiceTests
                 File.Delete(tempFile);
         }
     }
+
+    [Fact]
+    public void UpdateFlightOptionPrice_ChangesPrice_AndUpdatesLastCheckedAt()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(
+            stayId,
+            "https://example.com/flight",
+            "SFO",
+            "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0),
+            null);
+
+        var before = svc.GetFlightOptionsForStay(stayId).Single();
+        Assert.Null(before.Price);
+        Assert.Null(before.LastCheckedAt);
+
+        svc.UpdateFlightOptionPrice(stayId, before.Id, 599.99m);
+
+        var after = svc.GetFlightOptionsForStay(stayId).Single();
+        Assert.Equal(599.99m, after.Price);
+        Assert.NotNull(after.LastCheckedAt);
+    }
     #endregion
 
     #region LodgingOption Tests
