@@ -11,32 +11,112 @@ The system is based on the “A Day in the Life of Ava” planning scenario and 
 
 ---
 
-# Scenario
+## TravelPlanner CLI
 
-## A Day in the Life of Ava 
+TravelPlanner CLI is a console-based application for planning trips, tracking expenses, and evaluating travel options including:
+* Trips and stays
+* Expenses
+* Bookmarks (things to do)
+* Flight options
+* Lodging options
 
-### Morning
+It supports budgeting by combining:
+* actual expenses
+* selected travel options (flights + lodging)
 
-Ava sits at her kitchen table with her laptop open to a travel website. She wants to plan a trip to Italy but feels overwhelmed by the number of cities she wants to visit. “How do I decide where to go first?” she wonders, scribbling a rough list of locations.
+## Getting Started
+### Prerequisites
+* .NET 10 SDK
+* Windows / macOS / Linux
 
+### Check install:
+```
+dotnet --version
+Build the project
+```
+From the solution root:
+```
+dotnet build
+Run the application
+dotnet run --project TravelPlanner.Cli
+```
 
-### Late Morning
+### Data storage
 
-Ava’s best friend calls and suggests meeting to discuss the trip. “Let’s decide on activities for each city,” they say. Ava agrees but realizes shehasn’torganized her ideas. “I need a better way to map this out,” she mutters.
+The app stores data in:
+```
+data/trips.json
+```
 
+Created automatically on first run. It is safe to delete if you want a fresh start
 
-### Lunch
+### How to Use
 
-Over lunch, Ava browses through her bookmarked travel guides and blogs.She’sexcited about trying local foods and visiting historical sites but feels scattered. “I should organize theseideasso I don’t miss anything,” she thinks.
+The app is menu-driven.
 
+Main Menu
+→ Select or create a Trip
+→ Manage Stays
+→ Within a Stay:
+   - Expenses
+   - Bookmarks
+   - Flight Options
+   - Lodging Options
 
-### Afternoon
+### Flight Options
 
-Later in the day, Ava looks up flight options and hotel deals. She quickly loses track of the prices and availabilityshe’schecked. “If I don’t save this information somewhere, I’ll have to look it all up again,” she sighs.
+Add flight options with:
 
+* route
+* times
+* optional price
+* URL
 
-### Evening
+Mark a flight as selected to include it in the plan
 
-At the end of the day, Ava reflects on how much she loves planning trips but feels frustrated by the lack of a clear system. “If I had a tool to organize my itinerary, track bookings, and manage my budget, this trip would be so much easier to plan,” she resolves.
+Update price → automatically updates "last checked"
 
+Note that the intent was to have flights associated with the stay that is the flights destination. So flights from SFO to Narita would be kept under a stay for Tokyo.
 
+### Lodging Options
+
+Add lodging options with:
+* property name
+* dates
+* optional price
+* URL
+
+Mark selected lodging to include in budget
+
+### Budgeting
+
+The app calculates:
+* Expenses → actual spend
+* Selected travel options → planned cost
+* Total planned cost
+* Remaining budget
+
+Displayed at:
+* Stay level
+* Trip level
+
+### Notes on Selection
+
+“Select” in menus = navigate to details
+
+“Mark selected” = include in trip plan and budget
+
+Multiple options can be selected:
+* multiple flights (multi-leg trips)
+* multiple lodgings (split stays)
+
+### Running Tests
+```
+dotnet test
+```
+
+### Future Enhancements
+* Airline / alliance tracking
+* Advanced routing
+* Reporting / export
+* UI improvements
