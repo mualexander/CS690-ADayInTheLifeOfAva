@@ -37,7 +37,10 @@ dotnet --version
 From the solution root:
 ```
 dotnet build
-Run the application
+```
+
+### Run the application
+```
 dotnet run --project TravelPlanner.Cli
 ```
 
