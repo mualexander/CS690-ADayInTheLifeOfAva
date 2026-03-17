@@ -58,6 +58,18 @@
             "DepartTime": "2026-08-19T10:55:00",
             "ArriveTime": "2026-08-20T19:35:00"
           }
+        ],
+        "LodgingOptions": [
+          {
+            "Id": "6d82f68d-6568-4ee1-8ac1-383f2fb6aaf6",
+            "Url": "https://www.marriott.com/en-us/hotels/hijsi-sheraton-grand-hiroshima-hotel/overview/",
+            "CreatedAt": "2026-03-17T16:05:43.9680106Z",
+            "LastCheckedAt": null,
+            "IsSelected": false,
+            "PropertyName": "Sheraton Grand Hiroshima Hotel",
+            "CheckInDate": "2027-01-09T00:00:00",
+            "CheckOutDate": "2027-01-13T00:00:00"
+          }
         ]
       },
       {
@@ -68,7 +80,8 @@
         "EndDate": null,
         "Expenses": [],
         "Bookmarks": [],
-        "FlightOptions": []
+        "FlightOptions": [],
+        "LodgingOptions": []
       }
     ]
   }

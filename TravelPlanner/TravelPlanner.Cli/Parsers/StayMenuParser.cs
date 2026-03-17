@@ -17,6 +17,7 @@ public static class StayMenuParser
             "e" or "expenses" => StayMenuCommand.ManageExpenses,
             "b" or "bookmarks" => StayMenuCommand.ManageBookmarks,
             "f" or "flights" => StayMenuCommand.ManageFlightOptions,
+            "l" or "lodging" => StayMenuCommand.ManageLodgingOptions,
             "x" or "delete" => StayMenuCommand.DeleteStay,
             "q" or "back" => StayMenuCommand.Back,
             _ => StayMenuCommand.Unknown
