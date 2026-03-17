@@ -7,5 +7,8 @@ public record StaySummary(
     string Country,
     DateTime? StartDate,
     DateTime? EndDate,
-    decimal TotalSpent
+    decimal ExpenseTotal,
+    decimal SelectedFlightTotal,
+    decimal SelectedLodgingTotal,
+    decimal TotalPlannedCost
 );

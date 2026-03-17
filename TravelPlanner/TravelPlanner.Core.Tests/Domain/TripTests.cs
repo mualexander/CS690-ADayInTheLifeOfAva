@@ -66,7 +66,7 @@ public class TripTests
         var osakaStay = trip.AddStay(new Place("Osaka", "Japan"));
         osakaStay.AddExpense("Meals", 50m, ExpenseCategory.Activities);
 
-        Assert.Equal(150m, trip.TotalSpent());
+        Assert.Equal(150m, trip.TotalPlannedCost());
         Assert.Equal(850m, trip.RemainingBudget());
     }
 
@@ -78,7 +78,7 @@ public class TripTests
         var stay = trip.AddStay(new Place("Tokyo", "Japan"));
         stay.AddExpense("Meals", 150m, ExpenseCategory.Food);
 
-        Assert.Equal(150m, trip.TotalSpent());
+        Assert.Equal(150m, trip.TotalPlannedCost());
         Assert.Equal(-50m, trip.RemainingBudget());
     }
 
@@ -129,5 +129,24 @@ public class TripTests
 
         Assert.Throws<InvalidOperationException>(() =>
             trip.AddStay(new Place("Tokyo", "Japan")));
+    }
+
+    [Fact]
+    public void TotalPlannedCost_IncludesStayExpensesAndSelectedTravelOptions()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        var stay = trip.AddStay(new Place("Tokyo", "Japan"));
+
+        stay.AddExpense("Meals", 100m, ExpenseCategory.Food);
+
+        var flight = stay.AddFlightOption(
+            "https://example.com/flight", "SFO", "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0),
+            500m);
+        flight.Select();
+
+        Assert.Equal(600m, trip.TotalPlannedCost());
+        Assert.Equal(4400m, trip.RemainingBudget());
     }
 }

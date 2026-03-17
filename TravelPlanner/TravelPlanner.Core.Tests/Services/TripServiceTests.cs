@@ -153,13 +153,13 @@ public class TripServiceTests
 
         svc.AddExpenseToStay(stayId, "Meals", 180m, ExpenseCategory.Food, "Sushi");
 
-        Assert.Equal(180m, svc.GetTripTotalSpent());
+        Assert.Equal(180m, svc.GetTripTotalPlannedCost());
         Assert.Equal(4820m, svc.GetTripRemainingBudget());
 
         var updated = repo.GetById(trip.Id)!;
         var tokyoStay = updated.Stays.Single();
         Assert.Single(tokyoStay.Expenses);
-        Assert.Equal(180m, tokyoStay.TotalSpent());
+        Assert.Equal(180m, tokyoStay.TotalPlannedCost());
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class TripServiceTests
 
         Assert.Equal("Japan 2026", summary.Name);
         Assert.Equal(1000m, summary.TotalBudget);
-        Assert.Equal(200m, summary.TotalSpent);
+        Assert.Equal(200m, summary.TotalPlannedCost);
         Assert.Equal(800m, summary.RemainingBudget);
         Assert.Equal(1, summary.StayCount);
     }
@@ -396,6 +396,41 @@ public class TripServiceTests
             svc.DeleteStay(Guid.NewGuid()));
     }
 
+    [Fact]
+    public void GetStays_IncludesSelectedTravelCostsInSummary()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddExpenseToStay(stayId, "Meals", 100m, ExpenseCategory.Food, null);
+        svc.AddFlightOptionToStay(
+            stayId,
+            "https://example.com/flight",
+            "SFO",
+            "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0),
+            500m);
+
+        // assuming you have some way to select/mark the flight option; if not, do it through domain/repo for now
+
+        var stay = repo.GetById(trip.Id)!.Stays.Single();
+        stay.FlightOptions.Single().Select();
+        repo.Update(repo.GetById(trip.Id)!);
+
+        var summary = svc.GetStays().Single();
+
+        Assert.Equal(100m, summary.ExpenseTotal);
+        Assert.Equal(500m, summary.SelectedFlightTotal);
+        Assert.Equal(600m, summary.TotalPlannedCost);
+    }
     #endregion
 
     #region Bookmark Tests

@@ -52,7 +52,10 @@ public class TripService
                 s.Place.Country,
                 s.StartDate,
                 s.EndDate,
-                s.TotalSpent()
+                s.TotalExpenses(),
+                s.TotalSelectedFlightCost(),
+                s.TotalSelectedLodgingCost(),
+                s.TotalPlannedCost()
             ))
             .ToList();
     }
@@ -64,17 +67,31 @@ public class TripService
                 t.Id,
                 t.Name,
                 t.TotalBudget,
-                t.TotalSpent(),
+                t.TotalExpenses(),
+                t.TotalSelectedTravelOptionCost(),
+                t.TotalPlannedCost(),
                 t.RemainingBudget(),
                 t.Stays.Count
             ))
             .ToList();
     }
 
-    public decimal GetTripTotalSpent()
+    public decimal GetTripTotalExpenses()
     {
         var trip = GetActiveTrip();
-        return trip.TotalSpent();
+        return trip.TotalExpenses();
+    }
+
+    public decimal GetTripTotalTravelOptionCost()
+    {
+        var trip = GetActiveTrip();
+        return trip.TotalSelectedTravelOptionCost();
+    }
+
+    public decimal GetTripTotalPlannedCost()
+    {
+        var trip = GetActiveTrip();
+        return trip.TotalPlannedCost();
     }
 
     public decimal GetTripRemainingBudget()

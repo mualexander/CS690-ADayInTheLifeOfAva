@@ -99,10 +99,12 @@ public class Stay
         }
     }
 
-    public decimal TotalSpent() => _expenses.Sum(e => e.Amount);
+    public decimal TotalExpenses() => _expenses.Sum(e => e.Amount);
 
-    public decimal TotalSpent(ExpenseCategory category) =>
+    public decimal TotalExpenses(ExpenseCategory category) =>
         _expenses.Where(e => e.Category == category).Sum(e => e.Amount);
+
+    public decimal TotalPlannedCost() => TotalExpenses() + TotalSelectedTravelOptionCost();
 
     public string Label
     {
@@ -257,6 +259,24 @@ public class Stay
             ?? throw new InvalidOperationException("Lodging option not found.");
     }
 
+    public decimal TotalSelectedFlightCost()
+    {
+        return _flightOptions
+            .Where(f => f.IsSelected && f.Price.HasValue)
+            .Sum(f => f.Price!.Value);
+    }
+
+    public decimal TotalSelectedLodgingCost()
+    {
+        return _lodgingOptions
+            .Where(l => l.IsSelected && l.Price.HasValue)
+            .Sum(l => l.Price!.Value);
+    }
+
+    public decimal TotalSelectedTravelOptionCost()
+    {
+        return TotalSelectedFlightCost() + TotalSelectedLodgingCost();
+    }
 
     internal static Stay Hydrate(Guid id, Place place, DateTime? start, DateTime? end)
     {
