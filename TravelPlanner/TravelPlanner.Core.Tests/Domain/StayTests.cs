@@ -33,9 +33,9 @@ public class StayTests
         stay.AddExpense("Taxis", 40m, ExpenseCategory.Transportation);
 
         Assert.Equal(3, stay.Expenses.Count);
-        Assert.Equal(75m, stay.TotalSpent());
-        Assert.Equal(35m, stay.TotalSpent(ExpenseCategory.Food));
-        Assert.Equal(40m, stay.TotalSpent(ExpenseCategory.Transportation));
+        Assert.Equal(75m, stay.TotalExpenses());
+        Assert.Equal(35m, stay.TotalExpenses(ExpenseCategory.Food));
+        Assert.Equal(40m, stay.TotalExpenses(ExpenseCategory.Transportation));
     }
 
     [Fact]
@@ -289,6 +289,28 @@ public class StayTests
         Assert.Equal("LAX", found.FromAirportCode);
         Assert.Equal("SJC", found.ToAirportCode);
     }
+
+    [Fact]
+    public void TotalSelectedFlightCost_SumsOnlySelectedFlightsWithPrices()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+
+        var f1 = stay.AddFlightOption(
+            "https://example.com/1", "SFO", "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0),
+            500m);
+
+        var f2 = stay.AddFlightOption(
+            "https://example.com/2", "LAX", "NRT",
+            new DateTime(2026, 1, 10, 9, 0, 0),
+            new DateTime(2026, 1, 11, 13, 0, 0),
+            600m);
+
+        f1.Select();
+
+        Assert.Equal(500m, stay.TotalSelectedFlightCost());
+    }
     #endregion
 
     #region LodgingOption Tests
@@ -350,5 +372,45 @@ public class StayTests
         Assert.Equal(new DateTime(2026, 4, 10), found.CheckInDate);
         Assert.Equal(new DateTime(2026, 4, 14), found.CheckOutDate);
     }
+
+    [Fact]
+    public void TotalSelectedLodgingCost_SumsOnlySelectedLodgingWithPrices()
+    {
+        var stay = new Stay(new Place("Kyoto", "Japan"));
+
+        var l1 = stay.AddLodgingOption(
+            "https://example.com/h1", "Budget Inn",
+            new DateTime(2026, 4, 10), new DateTime(2026, 4, 12), 300m);
+
+        var l2 = stay.AddLodgingOption(
+            "https://example.com/h2", "Fancy Hotel",
+            new DateTime(2026, 4, 12), new DateTime(2026, 4, 14), 700m);
+
+        l2.Select();
+
+        Assert.Equal(700m, stay.TotalSelectedLodgingCost());
+    }
     #endregion
+
+    [Fact]
+    public void TotalPlannedCost_IncludesExpensesAndSelectedTravelOptions()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        stay.AddExpense("Meals", 100m, ExpenseCategory.Food);
+
+        var flight = stay.AddFlightOption(
+            "https://example.com/flight", "SFO", "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0),
+            500m);
+        flight.Select();
+
+        var lodging = stay.AddLodgingOption(
+            "https://example.com/hotel", "Hotel",
+            new DateTime(2026, 1, 11), new DateTime(2026, 1, 14),
+            400m);
+        lodging.Select();
+
+        Assert.Equal(1000m, stay.TotalPlannedCost());
+    }
 }

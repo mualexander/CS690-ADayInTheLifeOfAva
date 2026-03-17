@@ -157,4 +157,35 @@ public class LodgingOptionTests
         option.Deselect();
         Assert.False(option.IsSelected);
     }
+
+    [Fact]
+    public void Constructor_WithPrice_SetsPriceAndLastCheckedAt()
+    {
+        var option = new LodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14),
+            399.00m);
+
+        Assert.Equal(399.00m, option.Price);
+        Assert.NotNull(option.LastCheckedAt);
+    }
+
+    [Fact]
+    public void UpdatePrice_ChangesPriceAndSetsLastCheckedAt()
+    {
+        var option = new LodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        Assert.Null(option.LastCheckedAt);
+
+        option.UpdatePrice(450m);
+
+        Assert.Equal(450m, option.Price);
+        Assert.NotNull(option.LastCheckedAt);
+    }
 }

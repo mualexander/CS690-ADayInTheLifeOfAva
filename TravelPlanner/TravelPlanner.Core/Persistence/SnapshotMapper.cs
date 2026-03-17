@@ -58,6 +58,7 @@ public static class SnapshotMapper
         return new FlightOptionSnapshot(
             option.Id,
             option.Url,
+            option.Price,
             option.CreatedAt,
             option.LastCheckedAt,
             option.IsSelected,
@@ -73,6 +74,7 @@ public static class SnapshotMapper
         return new LodgingOptionSnapshot(
             option.Id,
             option.Url,
+            option.Price,
             option.CreatedAt,
             option.LastCheckedAt,
             option.IsSelected,
@@ -125,6 +127,7 @@ public static class SnapshotMapper
                 var flight = FlightOption.Hydrate(
                     flightSnap.Id,
                     flightSnap.Url,
+                    flightSnap.Price,
                     flightSnap.CreatedAt,
                     flightSnap.LastCheckedAt,
                     flightSnap.IsSelected,
@@ -142,6 +145,7 @@ public static class SnapshotMapper
                 var lodging = LodgingOption.Hydrate(
                     lodgingSnap.Id,
                     lodgingSnap.Url,
+                    lodgingSnap.Price,
                     lodgingSnap.CreatedAt,
                     lodgingSnap.LastCheckedAt,
                     lodgingSnap.IsSelected,

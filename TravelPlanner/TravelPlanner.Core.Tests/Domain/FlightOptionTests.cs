@@ -118,4 +118,37 @@ public class FlightOptionTests
 
         Assert.True(flight.CreatedAt <= DateTime.UtcNow);
     }
+
+    [Fact]
+    public void Constructor_WithPrice_SetsPriceAndLastCheckedAt()
+    {
+        var option = new FlightOption(
+            "https://example.com/flight",
+            "SFO",
+            "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0),
+            499.99m);
+
+        Assert.Equal(499.99m, option.Price);
+        Assert.NotNull(option.LastCheckedAt);
+    }
+
+    [Fact]
+    public void UpdatePrice_ChangesPriceAndSetsLastCheckedAt()
+    {
+        var option = new FlightOption(
+            "https://example.com/flight",
+            "SFO",
+            "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0));
+
+        Assert.Null(option.LastCheckedAt);
+
+        option.UpdatePrice(550m);
+
+        Assert.Equal(550m, option.Price);
+        Assert.NotNull(option.LastCheckedAt);
+    }
 }

@@ -19,7 +19,7 @@ public static class MenuRenderer
         {
             WriteLine($"Active trip: {activeTrip.Name}");
             WriteLine($"Budget: {activeTrip.TotalBudget:0.00}");
-            WriteLine($"Spent:  {activeTrip.TotalSpent():0.00}");
+            WriteLine($"Spent:  {activeTrip.TotalPlannedCost():0.00}");
             WriteLine($"Left:   {activeTrip.RemainingBudget():0.00}");
         }
 
@@ -141,6 +141,10 @@ public static class MenuRenderer
         ShowMenu(
             "Flight Option Detail Menu",
             ("V", "View flight option details"),
+            ("P", "Update price"),
+            ("U", "Update URL"),
+            ("S", "Mark selected"),
+            ("D", "Mark not selected"),
             ("Q", "Back")
         );
     }
@@ -162,6 +166,10 @@ public static class MenuRenderer
         ShowMenu(
             "Lodging Option Detail Menu",
             ("V", "View lodging option details"),
+            ("P", "Update price"),
+            ("U", "Update URL"),
+            ("S", "Mark selected"),
+            ("D", "Mark not selected"),
             ("Q", "Back")
         );
     }
@@ -181,7 +189,7 @@ public static class MenuRenderer
         {
             var t = trips[i];
             WriteLine(
-                $"{i + 1}. {t.Name} | Budget {t.TotalBudget:0.00} | Spent {t.TotalSpent:0.00} | Left {t.RemainingBudget:0.00} | Stays {t.StayCount}"
+                $"{i + 1}. {t.Name} | Budget {t.TotalBudget:0.00} | Cost {t.TotalPlannedCost:0.00} | Left {t.RemainingBudget:0.00} | Stays {t.StayCount}"
             );
         }
     }
@@ -199,7 +207,7 @@ public static class MenuRenderer
         for (int i = 0; i < stays.Count; i++)
         {
             var s = stays[i];
-            WriteLine($"{i + 1}. {s.DisplayKey} | Spent {s.TotalSpent:0.00}");
+            WriteLine($"{i + 1}. {s.DisplayKey} | Spent {s.TotalPlannedCost:0.00}");
         }
     }
 
@@ -208,7 +216,7 @@ public static class MenuRenderer
         WriteTitle("Trip Summary");
         WriteLine($"Name:   {trip.Name}");
         WriteLine($"Budget: {trip.TotalBudget:0.00}");
-        WriteLine($"Spent:  {trip.TotalSpent():0.00}");
+        WriteLine($"Cost:  {trip.TotalPlannedCost():0.00}");
         WriteLine($"Left:   {trip.RemainingBudget():0.00}");
         WriteLine($"Stays:  {trip.Stays.Count}");
     }
@@ -219,7 +227,10 @@ public static class MenuRenderer
         WriteLine($"Stay:    {stay.DisplayKey}");
         WriteLine($"City:    {stay.City}");
         WriteLine($"Country: {stay.Country}");
-        WriteLine($"Spent:   {stay.TotalSpent:0.00}");
+        WriteLine($"Cost:    {stay.TotalPlannedCost:0.00}");
+        WriteLine($"  Expenses:   {stay.ExpenseTotal:0.00}");
+        WriteLine($"  Flights:    {stay.SelectedFlightTotal:0.00}");
+        WriteLine($"  Lodging:    {stay.SelectedLodgingTotal:0.00}");
 
         if (stay.StartDate.HasValue && stay.EndDate.HasValue)
         {
@@ -313,6 +324,7 @@ public static class MenuRenderer
         WriteLine($"Route:        {option.FromAirportCode} -> {option.ToAirportCode}");
         WriteLine($"Depart:       {option.DepartTime:yyyy-MM-dd HH:mm}");
         WriteLine($"Arrive:       {option.ArriveTime:yyyy-MM-dd HH:mm}");
+        WriteLine($"Price:        {(option.Price.HasValue ? option.Price.Value.ToString("0.00") : "(unknown)")}");
         WriteLine($"URL:          {option.Url}");
         WriteLine($"CreatedAt:    {option.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
         WriteLine($"LastChecked:  {(option.LastCheckedAt.HasValue ? option.LastCheckedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "(never)")}");
@@ -345,6 +357,7 @@ public static class MenuRenderer
         WriteLine($"Property:     {option.PropertyName}");
         WriteLine($"Check-in:     {option.CheckInDate:yyyy-MM-dd}");
         WriteLine($"Check-out:    {option.CheckOutDate:yyyy-MM-dd}");
+        WriteLine($"Price:        {(option.Price.HasValue ? option.Price.Value.ToString("0.00") : "(unknown)")}");
         WriteLine($"URL:          {option.Url}");
         WriteLine($"CreatedAt:    {option.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
         WriteLine($"LastChecked:  {(option.LastCheckedAt.HasValue ? option.LastCheckedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "(never)")}");

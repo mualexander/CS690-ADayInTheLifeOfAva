@@ -13,8 +13,9 @@ public class FlightOption : TravelOption
         string fromAirportCode,
         string toAirportCode,
         DateTime departTime,
-        DateTime arriveTime)
-        : base(url)
+        DateTime arriveTime,
+        decimal? price = null)
+        : base(url, price)
     {
         if (string.IsNullOrWhiteSpace(fromAirportCode))
             throw new ArgumentException("From airport code cannot be empty.", nameof(fromAirportCode));
@@ -58,35 +59,34 @@ public class FlightOption : TravelOption
     }
 
     internal static FlightOption Hydrate(
-    Guid id,
-    string url,
-    DateTime createdAt,
-    DateTime? lastCheckedAt,
-    bool isSelected,
-    string fromAirportCode,
-    string toAirportCode,
-    DateTime departTime,
-    DateTime arriveTime)
+        Guid id,
+        string url,
+        decimal? price,
+        DateTime createdAt,
+        DateTime? lastCheckedAt,
+        bool isSelected,
+        string fromAirportCode,
+        string toAirportCode,
+        DateTime departTime,
+        DateTime arriveTime)
     {
         var option = new FlightOption(
             url,
             fromAirportCode,
             toAirportCode,
             departTime,
-            arriveTime);
-
-        option.Id = id;
-        option.CreatedAt = createdAt;
+            arriveTime,
+            price)
+        {
+            Id = id,
+            CreatedAt = createdAt
+        };
 
         if (lastCheckedAt.HasValue)
-        {
             option.MarkChecked(lastCheckedAt.Value);
-        }
 
         if (isSelected)
-        {
             option.Select();
-        }
 
         return option;
     }

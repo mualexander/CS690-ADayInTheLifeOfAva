@@ -3,6 +3,7 @@
 public record FlightOptionSummary(
     Guid Id,
     string Url,
+    decimal? Price,
     DateTime CreatedAt,
     DateTime? LastCheckedAt,
     bool IsSelected,

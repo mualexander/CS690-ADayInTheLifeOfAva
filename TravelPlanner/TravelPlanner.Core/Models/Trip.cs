@@ -80,8 +80,13 @@ public class Trip
         _stays.Remove(stay);
     }
 
-    public decimal TotalSpent() => _stays.Sum(s => s.TotalSpent());
-    public decimal RemainingBudget() => TotalBudget - TotalSpent();
+    public decimal TotalExpenses() => _stays.Sum(s => s.TotalExpenses());
+
+    public decimal TotalSelectedTravelOptionCost() => _stays.Sum(s => s.TotalSelectedTravelOptionCost());
+
+    public decimal TotalPlannedCost() => _stays.Sum(s => s.TotalPlannedCost());
+
+    public decimal RemainingBudget() => TotalBudget - TotalPlannedCost();
 
     internal static Trip Hydrate(Guid id, string name, decimal totalBudget, DateTime createdAt)
     {

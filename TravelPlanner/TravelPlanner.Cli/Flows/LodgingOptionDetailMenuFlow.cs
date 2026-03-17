@@ -33,6 +33,22 @@ public static class LodgingOptionDetailMenuFlow
                 MenuRenderer.ShowLodgingOptionDetails(activeLodgingOption);
                 return AppMode.LodgingOptionDetailMenu;
 
+            case LodgingOptionDetailMenuCommand.UpdatePrice:
+                ConsolePrompts.UpdateLodgingOptionPrice(svc, activeStay, ref activeLodgingOption);
+                return activeLodgingOption is null ? AppMode.FlightOptionMenu : AppMode.FlightOptionDetailMenu;
+
+            case LodgingOptionDetailMenuCommand.UpdateUrl:
+                ConsolePrompts.UpdateLodgingOptionUrl(svc, activeStay, ref activeLodgingOption);
+                return activeLodgingOption is null ? AppMode.FlightOptionMenu : AppMode.FlightOptionDetailMenu;
+
+            case LodgingOptionDetailMenuCommand.MarkSelected:
+                ConsolePrompts.MarkLodgingOptionSelected(svc, activeStay, ref activeLodgingOption);
+                return activeLodgingOption is null ? AppMode.LodgingOptionMenu : AppMode.LodgingOptionDetailMenu;
+
+            case LodgingOptionDetailMenuCommand.MarkNotSelected:
+                ConsolePrompts.MarkLodgingOptionNotSelected(svc, activeStay, ref activeLodgingOption);
+                return activeLodgingOption is null ? AppMode.LodgingOptionMenu : AppMode.LodgingOptionDetailMenu;
+
             case LodgingOptionDetailMenuCommand.Back:
                 activeLodgingOption = null;
                 return AppMode.LodgingOptionMenu;

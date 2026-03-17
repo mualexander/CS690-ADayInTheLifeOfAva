@@ -50,8 +50,9 @@
           {
             "Id": "d69c6288-18c7-4ac6-8fcd-b14828192126",
             "Url": "https://www.google.com/travel/flights/booking?tfs=CBwQAhpiEgoyMDI2LTA0LTAyIiAKA1NGTxIKMjAyNi0wNC0wMhoDQ0xUKgJBQTIEMTg3OCIgCgNDTFQSCjIwMjYtMDQtMDIaA0JPUyoCQUEyBDExMjBqBwgBEgNTRk9yBwgBEgNCT1MaYRIKMjAyNi0wNC0wOSIgCgNCT1MSCjIwMjYtMDQtMDkaA0RGVyoCQUEyBDE1NjMiHwoDREZXEgoyMDI2LTA0LTA5GgNTRk8qAkFBMgM0NDZqBwgBEgNCT1NyBwgBEgNTRk9AAUgBcAGCAQsI____________AZgBAQ\u0026tfu=CmhDalJJVnpVMGRFbDRURUpNVXpSQlEyZExOVUZDUnkwdExTMHRMUzB0TFhCcVltTjJOa0ZCUVVGQlIyMHdZVTlKUkZORldtRkJFZ0V5R2dzSWdKVURFQUlhQTFWVFJEZ1hjSUNWQXc9PRIGCAAQABgA",
+            "Price": 800,
             "CreatedAt": "2026-03-13T20:25:47.147347Z",
-            "LastCheckedAt": null,
+            "LastCheckedAt": "2026-03-17T21:02:51.9682098Z",
             "IsSelected": false,
             "FromAirportCode": "SFO",
             "ToAirportCode": "HIJ",
@@ -63,6 +64,7 @@
           {
             "Id": "6d82f68d-6568-4ee1-8ac1-383f2fb6aaf6",
             "Url": "https://www.marriott.com/en-us/hotels/hijsi-sheraton-grand-hiroshima-hotel/overview/",
+            "Price": null,
             "CreatedAt": "2026-03-17T16:05:43.9680106Z",
             "LastCheckedAt": null,
             "IsSelected": false,

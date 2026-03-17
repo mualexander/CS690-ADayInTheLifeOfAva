@@ -52,7 +52,10 @@ public class TripService
                 s.Place.Country,
                 s.StartDate,
                 s.EndDate,
-                s.TotalSpent()
+                s.TotalExpenses(),
+                s.TotalSelectedFlightCost(),
+                s.TotalSelectedLodgingCost(),
+                s.TotalPlannedCost()
             ))
             .ToList();
     }
@@ -64,17 +67,31 @@ public class TripService
                 t.Id,
                 t.Name,
                 t.TotalBudget,
-                t.TotalSpent(),
+                t.TotalExpenses(),
+                t.TotalSelectedTravelOptionCost(),
+                t.TotalPlannedCost(),
                 t.RemainingBudget(),
                 t.Stays.Count
             ))
             .ToList();
     }
 
-    public decimal GetTripTotalSpent()
+    public decimal GetTripTotalExpenses()
     {
         var trip = GetActiveTrip();
-        return trip.TotalSpent();
+        return trip.TotalExpenses();
+    }
+
+    public decimal GetTripTotalTravelOptionCost()
+    {
+        var trip = GetActiveTrip();
+        return trip.TotalSelectedTravelOptionCost();
+    }
+
+    public decimal GetTripTotalPlannedCost()
+    {
+        var trip = GetActiveTrip();
+        return trip.TotalPlannedCost();
     }
 
     public decimal GetTripRemainingBudget()
@@ -298,12 +315,13 @@ public class TripService
         string fromAirportCode,
         string toAirportCode,
         DateTime departTime,
-        DateTime arriveTime)
+        DateTime arriveTime,
+        decimal? price = null)
     {
         var trip = GetActiveTrip();
         var stay = GetStay(stayId);
 
-        stay.AddFlightOption(url, fromAirportCode, toAirportCode, departTime, arriveTime);
+        stay.AddFlightOption(url, fromAirportCode, toAirportCode, departTime, arriveTime, price);
 
         _repository.Update(trip);
     }
@@ -318,6 +336,7 @@ public class TripService
             .Select(f => new FlightOptionSummary(
                 f.Id,
                 f.Url,
+                f.Price,
                 f.CreatedAt,
                 f.LastCheckedAt,
                 f.IsSelected,
@@ -339,13 +358,36 @@ public class TripService
         _repository.Update(trip);
     }
 
+    public void UpdateFlightOptionPrice(Guid stayId, Guid flightOptionId, decimal? newPrice)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetFlightOption(flightOptionId);
+        option.UpdatePrice(newPrice);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateFlightOptionUrl(Guid stayId, Guid flightOptionId, string newUrl)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetFlightOption(flightOptionId);
+        option.UpdateUrl(newUrl);
+
+        _repository.Update(trip);
+    }
+
     // LodgingOptions
     public void AddLodgingOptionToStay(
         Guid stayId,
         string url,
         string propertyName,
         DateTime checkInDate,
-        DateTime checkOutDate)
+        DateTime checkOutDate,
+        decimal? price = null)
     {
         var trip = _context.ActiveTrip
             ?? throw new InvalidOperationException("No active trip.");
@@ -353,7 +395,7 @@ public class TripService
         var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
             ?? throw new InvalidOperationException("Stay not found.");
 
-        stay.AddLodgingOption(url, propertyName, checkInDate, checkOutDate);
+        stay.AddLodgingOption(url, propertyName, checkInDate, checkOutDate, price);
 
         _repository.Update(trip);
     }
@@ -371,6 +413,7 @@ public class TripService
             .Select(l => new LodgingOptionSummary(
                 l.Id,
                 l.Url,
+                l.Price,
                 l.CreatedAt,
                 l.LastCheckedAt,
                 l.IsSelected,
@@ -390,6 +433,84 @@ public class TripService
             ?? throw new InvalidOperationException("Stay not found.");
 
         stay.RemoveLodgingOption(lodgingOptionId);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateLodgingOptionPrice(Guid stayId, Guid lodgingOptionId, decimal? newPrice)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.UpdatePrice(newPrice);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateLodgingOptionUrl(Guid stayId, Guid lodgingOptionId, string newUrl)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.UpdateUrl(newUrl);
+
+        _repository.Update(trip);
+    }
+
+    public void SelectFlightOption(Guid stayId, Guid flightOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        var option = stay.GetFlightOption(flightOptionId);
+        option.Select();
+
+        _repository.Update(trip);
+    }
+
+    public void DeselectFlightOption(Guid stayId, Guid flightOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        var option = stay.GetFlightOption(flightOptionId);
+        option.Deselect();
+
+        _repository.Update(trip);
+    }
+
+    public void SelectLodgingOption(Guid stayId, Guid lodgingOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.Select();
+
+        _repository.Update(trip);
+    }
+
+    public void DeselectLodgingOption(Guid stayId, Guid lodgingOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.Deselect();
 
         _repository.Update(trip);
     }
