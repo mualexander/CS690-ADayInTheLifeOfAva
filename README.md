@@ -32,8 +32,8 @@ It supports budgeting by combining:
 ### Check install:
 ```
 dotnet --version
-Build the project
 ```
+### Build the project
 From the solution root:
 ```
 dotnet build
