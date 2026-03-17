@@ -80,7 +80,32 @@
         "Country": "Japan",
         "StartDate": null,
         "EndDate": null,
-        "Expenses": [],
+        "Expenses": [
+          {
+            "Id": "a3a6124c-095b-48f6-8399-0dab001bb38a",
+            "Name": "Deer crackers",
+            "Amount": 20,
+            "Category": "Activities",
+            "Note": "Crackers for feeding the deer at Nara Deer Park",
+            "CreatedAt": "2026-03-17T23:16:23.7601401Z"
+          },
+          {
+            "Id": "5e109532-c971-4926-ba93-059fc4efe599",
+            "Name": "More ramen",
+            "Amount": 250,
+            "Category": "Food",
+            "Note": "Keep the ramen tour going",
+            "CreatedAt": "2026-03-17T23:24:41.9265148Z"
+          },
+          {
+            "Id": "33b2d182-4c2b-4040-81ee-af449fcb5c6e",
+            "Name": "Taxi",
+            "Amount": 50,
+            "Category": "Transportation",
+            "Note": "Go taxi app for getting to the deer park",
+            "CreatedAt": "2026-03-17T23:25:36.8178969Z"
+          }
+        ],
         "Bookmarks": [],
         "FlightOptions": [],
         "LodgingOptions": []
