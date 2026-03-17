@@ -21,6 +21,9 @@ public class Stay
     private readonly List<FlightOption> _flightOptions = new();
     public IReadOnlyCollection<FlightOption> FlightOptions => _flightOptions.AsReadOnly();
 
+    private readonly List<LodgingOption> _lodgingOptions = new();
+    public IReadOnlyCollection<LodgingOption> LodgingOptions => _lodgingOptions.AsReadOnly();
+
     public Stay(Place place)
     {
         Place = place ?? throw new ArgumentNullException(nameof(place));
@@ -219,6 +222,33 @@ public class Stay
             ?? throw new InvalidOperationException("Flight option not found.");
     }
 
+    public LodgingOption AddLodgingOption(
+        string url,
+        string propertyName,
+        DateTime checkInDate,
+        DateTime checkOutDate)
+    {
+        var option = new LodgingOption(url, propertyName, checkInDate, checkOutDate);
+        _lodgingOptions.Add(option);
+        return option;
+    }
+
+    public void RemoveLodgingOption(Guid lodgingOptionId)
+    {
+        var option = _lodgingOptions.FirstOrDefault(l => l.Id == lodgingOptionId);
+        if (option == null)
+            throw new InvalidOperationException("Lodging option not found.");
+
+        _lodgingOptions.Remove(option);
+    }
+
+    public LodgingOption GetLodgingOption(Guid lodgingOptionId)
+    {
+        return _lodgingOptions.FirstOrDefault(l => l.Id == lodgingOptionId)
+            ?? throw new InvalidOperationException("Lodging option not found.");
+    }
+
+
     internal static Stay Hydrate(Guid id, Place place, DateTime? start, DateTime? end)
     {
         var stay = new Stay(place);
@@ -243,5 +273,10 @@ public class Stay
     internal void HydrateAddFlightOption(FlightOption option)
     {
         _flightOptions.Add(option);
+    }
+
+    internal void HydrateAddLodgingOption(LodgingOption option)
+    {
+        _lodgingOptions.Add(option);
     }
 }

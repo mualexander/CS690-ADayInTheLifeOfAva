@@ -290,4 +290,65 @@ public class StayTests
         Assert.Equal("SJC", found.ToAirportCode);
     }
     #endregion
+
+    #region LodgingOption Tests
+    [Fact]
+    public void AddLodgingOption_AddsLodgingOption()
+    {
+        var stay = new Stay(new Place("Kyoto", "Japan"));
+
+        var option = stay.AddLodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        Assert.Single(stay.LodgingOptions);
+        Assert.Equal("Budget Inn", option.PropertyName);
+        Assert.Equal(new DateTime(2026, 4, 10), option.CheckInDate);
+        Assert.Equal(new DateTime(2026, 4, 14), option.CheckOutDate);
+    }
+
+    [Fact]
+    public void RemoveLodgingOption_RemovesExistingLodgingOption()
+    {
+        var stay = new Stay(new Place("Kyoto", "Japan"));
+        var option = stay.AddLodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        stay.RemoveLodgingOption(option.Id);
+
+        Assert.Empty(stay.LodgingOptions);
+    }
+
+    [Fact]
+    public void RemoveLodgingOption_ThrowsWhenMissing()
+    {
+        var stay = new Stay(new Place("Kyoto", "Japan"));
+
+        Assert.Throws<InvalidOperationException>(() =>
+            stay.RemoveLodgingOption(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void GetLodgingOption_ReturnsMatchingLodgingOption()
+    {
+        var stay = new Stay(new Place("Kyoto", "Japan"));
+        var option = stay.AddLodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        var found = stay.GetLodgingOption(option.Id);
+
+        Assert.Equal(option.Id, found.Id);
+        Assert.Equal("Budget Inn", found.PropertyName);
+        Assert.Equal(new DateTime(2026, 4, 10), found.CheckInDate);
+        Assert.Equal(new DateTime(2026, 4, 14), found.CheckOutDate);
+    }
+    #endregion
 }

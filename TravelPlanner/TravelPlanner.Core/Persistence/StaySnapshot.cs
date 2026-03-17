@@ -8,5 +8,6 @@ public record StaySnapshot(
     DateTime? EndDate,
     List<ExpenseSnapshot> Expenses,
     List<BookmarkSnapshot> Bookmarks,
-    List<FlightOptionSnapshot> FlightOptions
+    List<FlightOptionSnapshot> FlightOptions,
+    List<LodgingOptionSnapshot> LodgingOptions
 );
