@@ -190,18 +190,20 @@ public class Stay
     }
 
     public FlightOption AddFlightOption(
-        string url,
-        string fromAirportCode,
-        string toAirportCode,
-        DateTime departTime,
-        DateTime arriveTime)
+       string url,
+       string fromAirportCode,
+       string toAirportCode,
+       DateTime departTime,
+       DateTime arriveTime,
+       decimal? price = null)
     {
         var option = new FlightOption(
             url,
             fromAirportCode,
             toAirportCode,
             departTime,
-            arriveTime);
+            arriveTime,
+            price);
 
         _flightOptions.Add(option);
         return option;
@@ -226,9 +228,16 @@ public class Stay
         string url,
         string propertyName,
         DateTime checkInDate,
-        DateTime checkOutDate)
+        DateTime checkOutDate,
+        decimal? price = null)
     {
-        var option = new LodgingOption(url, propertyName, checkInDate, checkOutDate);
+        var option = new LodgingOption(
+            url,
+            propertyName,
+            checkInDate,
+            checkOutDate,
+            price);
+
         _lodgingOptions.Add(option);
         return option;
     }

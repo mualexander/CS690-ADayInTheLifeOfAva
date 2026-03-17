@@ -298,12 +298,13 @@ public class TripService
         string fromAirportCode,
         string toAirportCode,
         DateTime departTime,
-        DateTime arriveTime)
+        DateTime arriveTime,
+        decimal? price = null)
     {
         var trip = GetActiveTrip();
         var stay = GetStay(stayId);
 
-        stay.AddFlightOption(url, fromAirportCode, toAirportCode, departTime, arriveTime);
+        stay.AddFlightOption(url, fromAirportCode, toAirportCode, departTime, arriveTime, price);
 
         _repository.Update(trip);
     }
@@ -318,6 +319,7 @@ public class TripService
             .Select(f => new FlightOptionSummary(
                 f.Id,
                 f.Url,
+                f.Price,
                 f.CreatedAt,
                 f.LastCheckedAt,
                 f.IsSelected,
@@ -345,7 +347,8 @@ public class TripService
         string url,
         string propertyName,
         DateTime checkInDate,
-        DateTime checkOutDate)
+        DateTime checkOutDate,
+        decimal? price = null)
     {
         var trip = _context.ActiveTrip
             ?? throw new InvalidOperationException("No active trip.");
@@ -353,7 +356,7 @@ public class TripService
         var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
             ?? throw new InvalidOperationException("Stay not found.");
 
-        stay.AddLodgingOption(url, propertyName, checkInDate, checkOutDate);
+        stay.AddLodgingOption(url, propertyName, checkInDate, checkOutDate, price);
 
         _repository.Update(trip);
     }
@@ -371,6 +374,7 @@ public class TripService
             .Select(l => new LodgingOptionSummary(
                 l.Id,
                 l.Url,
+                l.Price,
                 l.CreatedAt,
                 l.LastCheckedAt,
                 l.IsSelected,

@@ -313,6 +313,7 @@ public static class MenuRenderer
         WriteLine($"Route:        {option.FromAirportCode} -> {option.ToAirportCode}");
         WriteLine($"Depart:       {option.DepartTime:yyyy-MM-dd HH:mm}");
         WriteLine($"Arrive:       {option.ArriveTime:yyyy-MM-dd HH:mm}");
+        WriteLine($"Price:        {(option.Price.HasValue ? option.Price.Value.ToString("0.00") : "(unknown)")}");
         WriteLine($"URL:          {option.Url}");
         WriteLine($"CreatedAt:    {option.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
         WriteLine($"LastChecked:  {(option.LastCheckedAt.HasValue ? option.LastCheckedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "(never)")}");
@@ -345,6 +346,7 @@ public static class MenuRenderer
         WriteLine($"Property:     {option.PropertyName}");
         WriteLine($"Check-in:     {option.CheckInDate:yyyy-MM-dd}");
         WriteLine($"Check-out:    {option.CheckOutDate:yyyy-MM-dd}");
+        WriteLine($"Price:        {(option.Price.HasValue ? option.Price.Value.ToString("0.00") : "(unknown)")}");
         WriteLine($"URL:          {option.Url}");
         WriteLine($"CreatedAt:    {option.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
         WriteLine($"LastChecked:  {(option.LastCheckedAt.HasValue ? option.LastCheckedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "(never)")}");

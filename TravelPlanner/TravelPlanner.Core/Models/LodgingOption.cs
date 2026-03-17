@@ -10,8 +10,9 @@ public class LodgingOption : TravelOption
         string url,
         string propertyName,
         DateTime checkInDate,
-        DateTime checkOutDate)
-        : base(url)
+        DateTime checkOutDate,
+        decimal? price = null)
+        : base(url, price)
     {
         if (string.IsNullOrWhiteSpace(propertyName))
             throw new ArgumentException("Property name cannot be empty.", nameof(propertyName));
@@ -50,6 +51,7 @@ public class LodgingOption : TravelOption
     internal static LodgingOption Hydrate(
         Guid id,
         string url,
+        decimal? price,
         DateTime createdAt,
         DateTime? lastCheckedAt,
         bool isSelected,
@@ -57,7 +59,12 @@ public class LodgingOption : TravelOption
         DateTime checkInDate,
         DateTime checkOutDate)
     {
-        var option = new LodgingOption(url, propertyName, checkInDate, checkOutDate)
+        var option = new LodgingOption(
+            url,
+            propertyName,
+            checkInDate,
+            checkOutDate,
+            price)
         {
             Id = id,
             CreatedAt = createdAt

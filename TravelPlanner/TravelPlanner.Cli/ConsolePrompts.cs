@@ -421,13 +421,16 @@ public static class ConsolePrompts
         var departTime = ParseDateTime(departInput);
         var arriveTime = ParseDateTime(arriveInput);
 
+        var price = PromptOptionalPrice();
+
         svc.AddFlightOptionToStay(
             activeStay.Id,
             url,
             fromAirportCode,
             toAirportCode,
             departTime,
-            arriveTime);
+            arriveTime,
+            price);
 
         MenuRenderer.ShowMessage("Flight option added.");
     }
@@ -519,12 +522,15 @@ public static class ConsolePrompts
         var checkInDate = ParseDate(checkInInput);
         var checkOutDate = ParseDate(checkOutInput);
 
+        var price = PromptOptionalPrice();
+
         svc.AddLodgingOptionToStay(
             activeStay.Id,
             url,
             propertyName,
             checkInDate,
-            checkOutDate);
+            checkOutDate,
+            price);
 
         MenuRenderer.ShowMessage("Lodging option added.");
     }
@@ -599,7 +605,19 @@ public static class ConsolePrompts
         MenuRenderer.ShowMessage("Lodging option deleted.");
     }
 
+    public static decimal? PromptOptionalPrice()
+    {
+        Console.Write("Price (blank if unknown): ");
+        var input = (Console.ReadLine() ?? "").Trim();
 
+        if (string.IsNullOrWhiteSpace(input))
+            return null;
+
+        if (!decimal.TryParse(input, NumberStyles.Number, CultureInfo.InvariantCulture, out var price))
+            throw new ArgumentException("Invalid price.");
+
+        return price;
+    }
 
 
     public static void SeedDemoData(TripService svc)
