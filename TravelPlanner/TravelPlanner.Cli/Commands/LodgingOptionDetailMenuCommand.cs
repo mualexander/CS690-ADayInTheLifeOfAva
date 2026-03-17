@@ -6,5 +6,7 @@ public enum LodgingOptionDetailMenuCommand
     ViewDetails,
     UpdatePrice,
     UpdateUrl,
+    MarkSelected,
+    MarkNotSelected,
     Back
 }

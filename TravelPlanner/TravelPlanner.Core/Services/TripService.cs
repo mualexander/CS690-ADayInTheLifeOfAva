@@ -458,4 +458,60 @@ public class TripService
 
         _repository.Update(trip);
     }
+
+    public void SelectFlightOption(Guid stayId, Guid flightOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        var option = stay.GetFlightOption(flightOptionId);
+        option.Select();
+
+        _repository.Update(trip);
+    }
+
+    public void DeselectFlightOption(Guid stayId, Guid flightOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        var option = stay.GetFlightOption(flightOptionId);
+        option.Deselect();
+
+        _repository.Update(trip);
+    }
+
+    public void SelectLodgingOption(Guid stayId, Guid lodgingOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.Select();
+
+        _repository.Update(trip);
+    }
+
+    public void DeselectLodgingOption(Guid stayId, Guid lodgingOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.Deselect();
+
+        _repository.Update(trip);
+    }
 }

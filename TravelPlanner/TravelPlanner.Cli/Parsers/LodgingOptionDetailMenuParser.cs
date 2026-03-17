@@ -13,6 +13,8 @@ public static class LodgingOptionDetailMenuParser
             "v" or "view" => LodgingOptionDetailMenuCommand.ViewDetails,
             "p" or "price" => LodgingOptionDetailMenuCommand.UpdatePrice,
             "u" or "url" => LodgingOptionDetailMenuCommand.UpdateUrl,
+            "s" or "activate" or "select" => LodgingOptionDetailMenuCommand.MarkSelected,
+            "d" or "deactivate" or "deselect" => LodgingOptionDetailMenuCommand.MarkNotSelected,
             "q" or "back" => LodgingOptionDetailMenuCommand.Back,
             _ => LodgingOptionDetailMenuCommand.Unknown
         };

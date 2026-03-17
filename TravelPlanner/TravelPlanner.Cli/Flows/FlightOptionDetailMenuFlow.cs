@@ -41,6 +41,14 @@ public static class FlightOptionDetailMenuFlow
                 ConsolePrompts.UpdateFlightOptionUrl(svc, activeStay, ref activeFlightOption);
                 return activeFlightOption is null ? AppMode.FlightOptionMenu : AppMode.FlightOptionDetailMenu;
 
+            case FlightOptionDetailMenuCommand.MarkSelected:
+                ConsolePrompts.MarkFlightOptionSelected(svc, activeStay, ref activeFlightOption);
+                return activeFlightOption is null ? AppMode.FlightOptionMenu : AppMode.FlightOptionDetailMenu;
+
+            case FlightOptionDetailMenuCommand.MarkNotSelected:
+                ConsolePrompts.MarkFlightOptionNotSelected(svc, activeStay, ref activeFlightOption);
+                return activeFlightOption is null ? AppMode.FlightOptionMenu : AppMode.FlightOptionDetailMenu;
+
             case FlightOptionDetailMenuCommand.Back:
                 activeFlightOption = null;
                 return AppMode.FlightOptionMenu;

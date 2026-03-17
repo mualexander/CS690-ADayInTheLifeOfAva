@@ -742,6 +742,67 @@ public class TripServiceTests
         Assert.Equal(599.99m, after.Price);
         Assert.NotNull(after.LastCheckedAt);
     }
+
+    [Fact]
+    public void SelectFlightOption_MarksFlightAsSelected()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(
+            stayId,
+            "https://example.com/flight",
+            "SFO",
+            "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0),
+            500m);
+
+        var optionId = svc.GetFlightOptionsForStay(stayId).Single().Id;
+
+        svc.SelectFlightOption(stayId, optionId);
+
+        var updated = svc.GetFlightOptionsForStay(stayId).Single();
+        Assert.True(updated.IsSelected);
+    }
+
+    [Fact]
+    public void DeselectFlightOption_MarksFlightAsNotSelected()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(
+            stayId,
+            "https://example.com/flight",
+            "SFO",
+            "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0),
+            new DateTime(2026, 1, 11, 12, 0, 0),
+            500m);
+
+        var optionId = svc.GetFlightOptionsForStay(stayId).Single().Id;
+
+        svc.SelectFlightOption(stayId, optionId);
+        svc.DeselectFlightOption(stayId, optionId);
+
+        var updated = svc.GetFlightOptionsForStay(stayId).Single();
+        Assert.False(updated.IsSelected);
+    }
     #endregion
 
     #region LodgingOption Tests
@@ -862,6 +923,63 @@ public class TripServiceTests
 
         Assert.Throws<InvalidOperationException>(() =>
             svc.GetLodgingOptionsForStay(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void SelectLodgingOption_MarksFlightAsSelected()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddLodgingOptionToStay(
+            stayId,
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        var optionId = svc.GetLodgingOptionsForStay(stayId).Single().Id;
+
+        svc.SelectLodgingOption(stayId, optionId);
+
+        var updated = svc.GetLodgingOptionsForStay(stayId).Single();
+        Assert.True(updated.IsSelected);
+    }
+
+    [Fact]
+    public void DeselectLodgingOption_MarksFlightAsNotSelected()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddLodgingOptionToStay(
+            stayId,
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        var optionId = svc.GetLodgingOptionsForStay(stayId).Single().Id;
+
+        svc.SelectLodgingOption(stayId, optionId);
+        svc.DeselectLodgingOption(stayId, optionId);
+
+        var updated = svc.GetLodgingOptionsForStay(stayId).Single();
+        Assert.False(updated.IsSelected);
     }
     #endregion
 }

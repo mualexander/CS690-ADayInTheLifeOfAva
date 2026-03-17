@@ -13,6 +13,8 @@ public static class FlightOptionDetailMenuParser
             "v" or "view" => FlightOptionDetailMenuCommand.ViewDetails,
             "p" or "price" => FlightOptionDetailMenuCommand.UpdatePrice,
             "u" or "url" => FlightOptionDetailMenuCommand.UpdateUrl,
+            "s" or "activate" or "select" => FlightOptionDetailMenuCommand.MarkSelected,
+            "d" or "deactivate" or "deselect" => FlightOptionDetailMenuCommand.MarkNotSelected,
             "q" or "back" => FlightOptionDetailMenuCommand.Back,
             _ => FlightOptionDetailMenuCommand.Unknown
         };

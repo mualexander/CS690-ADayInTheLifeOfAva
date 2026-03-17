@@ -213,6 +213,9 @@ public class ConsoleApplication
                         if (_mode == AppMode.StayMenu)
                         {
                             _activeFlightOption = null;
+
+                            if (_activeStay is not null)
+                                _activeStay = ConsolePrompts.RefreshActiveStay(_svc, _activeStay.Id);
                         }
                         else if (_mode == AppMode.TripMenu)
                         {
@@ -232,10 +235,16 @@ public class ConsoleApplication
                         if (_mode == AppMode.FlightOptionMenu)
                         {
                             _activeFlightOption = null;
+
+                            if (_activeStay is not null)
+                                _activeStay = ConsolePrompts.RefreshActiveStay(_svc, _activeStay.Id);
                         }
                         else if (_mode == AppMode.StayMenu)
                         {
                             _activeFlightOption = null;
+
+                            if (_activeStay is not null)
+                                _activeStay = ConsolePrompts.RefreshActiveStay(_svc, _activeStay.Id);
                         }
                         else if (_mode == AppMode.TripMenu)
                         {
@@ -255,6 +264,9 @@ public class ConsoleApplication
                         if (_mode == AppMode.StayMenu)
                         {
                             _activeLodgingOption = null;
+
+                            if (_activeStay is not null)
+                                _activeStay = ConsolePrompts.RefreshActiveStay(_svc, _activeStay.Id);
                         }
                         else if (_mode == AppMode.TripMenu)
                         {
@@ -274,10 +286,16 @@ public class ConsoleApplication
                         if (_mode == AppMode.LodgingOptionMenu)
                         {
                             _activeLodgingOption = null;
+
+                            if (_activeStay is not null)
+                                _activeStay = ConsolePrompts.RefreshActiveStay(_svc, _activeStay.Id);
                         }
                         else if (_mode == AppMode.StayMenu)
                         {
                             _activeLodgingOption = null;
+
+                            if (_activeStay is not null)
+                                _activeStay = ConsolePrompts.RefreshActiveStay(_svc, _activeStay.Id);
                         }
                         else if (_mode == AppMode.TripMenu)
                         {

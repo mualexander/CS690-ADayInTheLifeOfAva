@@ -6,5 +6,7 @@ public enum FlightOptionDetailMenuCommand
     ViewDetails,
     UpdatePrice,
     UpdateUrl,
+    MarkSelected,
+    MarkNotSelected,
     Back
 }

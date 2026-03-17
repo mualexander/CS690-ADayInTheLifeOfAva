@@ -143,6 +143,8 @@ public static class MenuRenderer
             ("V", "View flight option details"),
             ("P", "Update price"),
             ("U", "Update URL"),
+            ("S", "Mark selected"),
+            ("D", "Mark not selected"),
             ("Q", "Back")
         );
     }
@@ -166,6 +168,8 @@ public static class MenuRenderer
             ("V", "View lodging option details"),
             ("P", "Update price"),
             ("U", "Update URL"),
+            ("S", "Mark selected"),
+            ("D", "Mark not selected"),
             ("Q", "Back")
         );
     }

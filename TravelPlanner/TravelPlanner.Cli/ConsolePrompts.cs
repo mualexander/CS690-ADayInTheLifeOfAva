@@ -533,6 +533,32 @@ public static class ConsolePrompts
         MenuRenderer.ShowMessage("Flight URL updated.");
     }
 
+    public static void MarkFlightOptionSelected(
+    TripService svc,
+    StaySummary activeStay,
+    ref FlightOptionSummary? activeFlightOption)
+    {
+        var option = RequireActiveFlightOption(activeFlightOption);
+
+        svc.SelectFlightOption(activeStay.Id, option.Id);
+        activeFlightOption = RefreshActiveFlightOption(svc, activeStay.Id, option.Id);
+
+        MenuRenderer.ShowMessage("Flight option marked selected.");
+    }
+
+    public static void MarkFlightOptionNotSelected(
+        TripService svc,
+        StaySummary activeStay,
+        ref FlightOptionSummary? activeFlightOption)
+    {
+        var option = RequireActiveFlightOption(activeFlightOption);
+
+        svc.DeselectFlightOption(activeStay.Id, option.Id);
+        activeFlightOption = RefreshActiveFlightOption(svc, activeStay.Id, option.Id);
+
+        MenuRenderer.ShowMessage("Flight option marked not selected.");
+    }
+
     public static void AddLodgingOption(TripService svc, StaySummary activeStay)
     {
         Console.Write("Lodging option URL: ");
@@ -661,6 +687,31 @@ public static class ConsolePrompts
         MenuRenderer.ShowMessage("Lodging URL updated.");
     }
 
+    public static void MarkLodgingOptionSelected(
+    TripService svc,
+    StaySummary activeStay,
+    ref LodgingOptionSummary? activeLodgingOption)
+    {
+        var option = RequireActiveLodgingOption(activeLodgingOption);
+
+        svc.SelectLodgingOption(activeStay.Id, option.Id);
+        activeLodgingOption = RefreshActiveLodgingOption(svc, activeStay.Id, option.Id);
+
+        MenuRenderer.ShowMessage("Lodging option marked selected.");
+    }
+
+    public static void MarkLodgingOptionNotSelected(
+        TripService svc,
+        StaySummary activeStay,
+        ref LodgingOptionSummary? activeLodgingOption)
+    {
+        var option = RequireActiveLodgingOption(activeLodgingOption);
+
+        svc.DeselectLodgingOption(activeStay.Id, option.Id);
+        activeLodgingOption = RefreshActiveLodgingOption(svc, activeStay.Id, option.Id);
+
+        MenuRenderer.ShowMessage("Lodging option marked not selected.");
+    }
 
     public static decimal? PromptOptionalPrice()
     {
