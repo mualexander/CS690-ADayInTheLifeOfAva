@@ -66,6 +66,7 @@ public static class MenuRenderer
             ("E", "Expenses"),
             ("B", "Bookmarks"),
             ("F", "Flights"),
+            ("L", "Lodging"),
             ("P", "Set place"),
             ("I", "Set start date"),
             ("O", "Set end date"),
@@ -143,6 +144,28 @@ public static class MenuRenderer
             ("Q", "Back")
         );
     }
+
+    public static void ShowLodgingOptionMenu()
+    {
+        ShowMenu(
+            "Lodging Option Menu",
+            ("L", "List lodging options"),
+            ("A", "Add lodging option"),
+            ("S", "Select lodging option"),
+            ("D", "Delete lodging option"),
+            ("Q", "Back")
+        );
+    }
+
+    public static void ShowLodgingOptionDetailMenu()
+    {
+        ShowMenu(
+            "Lodging Option Detail Menu",
+            ("V", "View lodging option details"),
+            ("Q", "Back")
+        );
+    }
+
 
     public static void ShowTrips(IReadOnlyList<TripSummary> trips)
     {
@@ -290,6 +313,38 @@ public static class MenuRenderer
         WriteLine($"Route:        {option.FromAirportCode} -> {option.ToAirportCode}");
         WriteLine($"Depart:       {option.DepartTime:yyyy-MM-dd HH:mm}");
         WriteLine($"Arrive:       {option.ArriveTime:yyyy-MM-dd HH:mm}");
+        WriteLine($"URL:          {option.Url}");
+        WriteLine($"CreatedAt:    {option.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
+        WriteLine($"LastChecked:  {(option.LastCheckedAt.HasValue ? option.LastCheckedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "(never)")}");
+        WriteLine($"Selected:     {option.IsSelected}");
+    }
+
+    public static void ShowLodgingOptions(IReadOnlyList<LodgingOptionSummary> options)
+    {
+        WriteTitle("Lodging Options");
+
+        if (options.Count == 0)
+        {
+            WriteLine("(no lodging options yet)");
+            return;
+        }
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            var l = options[i];
+            WriteLine(
+                $"{i + 1}. {l.PropertyName} | " +
+                $"{l.CheckInDate:yyyy-MM-dd} -> {l.CheckOutDate:yyyy-MM-dd}"
+            );
+        }
+    }
+
+    public static void ShowLodgingOptionDetails(LodgingOptionSummary option)
+    {
+        WriteTitle("Lodging Option Details");
+        WriteLine($"Property:     {option.PropertyName}");
+        WriteLine($"Check-in:     {option.CheckInDate:yyyy-MM-dd}");
+        WriteLine($"Check-out:    {option.CheckOutDate:yyyy-MM-dd}");
         WriteLine($"URL:          {option.Url}");
         WriteLine($"CreatedAt:    {option.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
         WriteLine($"LastChecked:  {(option.LastCheckedAt.HasValue ? option.LastCheckedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") + " UTC" : "(never)")}");

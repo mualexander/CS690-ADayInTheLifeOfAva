@@ -10,5 +10,7 @@ public enum AppMode
     BookmarkMenu,
     BookmarkDetailMenu,
     FlightOptionMenu,
-    FlightOptionDetailMenu
+    FlightOptionDetailMenu,
+    LodgingOptionMenu,
+    LodgingOptionDetailMenu
 }

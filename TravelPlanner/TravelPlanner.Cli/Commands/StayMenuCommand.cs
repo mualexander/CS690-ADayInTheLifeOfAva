@@ -10,6 +10,7 @@ public enum StayMenuCommand
     ManageExpenses,
     ManageBookmarks,
     ManageFlightOptions,
+    ManageLodgingOptions,
     DeleteStay,
     Back
 }

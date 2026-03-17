@@ -502,6 +502,106 @@ public static class ConsolePrompts
         MenuRenderer.ShowMessage("Flight option deleted.");
     }
 
+    public static void AddLodgingOption(TripService svc, StaySummary activeStay)
+    {
+        Console.Write("Lodging option URL: ");
+        var url = (Console.ReadLine() ?? "").Trim();
+
+        Console.Write("Property name: ");
+        var propertyName = (Console.ReadLine() ?? "").Trim();
+
+        Console.Write("Check-in date (YYYY-MM-DD): ");
+        var checkInInput = (Console.ReadLine() ?? "").Trim();
+
+        Console.Write("Check-out date (YYYY-MM-DD): ");
+        var checkOutInput = (Console.ReadLine() ?? "").Trim();
+
+        var checkInDate = ParseDate(checkInInput);
+        var checkOutDate = ParseDate(checkOutInput);
+
+        svc.AddLodgingOptionToStay(
+            activeStay.Id,
+            url,
+            propertyName,
+            checkInDate,
+            checkOutDate);
+
+        MenuRenderer.ShowMessage("Lodging option added.");
+    }
+
+    public static void DeleteLodgingOption(TripService svc, StaySummary activeStay)
+    {
+        var options = svc.GetLodgingOptionsForStay(activeStay.Id);
+        if (options.Count == 0)
+            throw new InvalidOperationException("No lodging options found.");
+
+        MenuRenderer.ShowLodgingOptions(options);
+
+        Console.Write("Select lodging option #: ");
+        var input = (Console.ReadLine() ?? "").Trim();
+
+        if (!int.TryParse(input, out var idx) || idx < 1 || idx > options.Count)
+            throw new ArgumentException("Invalid selection.");
+
+        var selected = options[idx - 1];
+
+        Console.Write($"Type DELETE to remove '{selected.PropertyName}': ");
+        var confirm = (Console.ReadLine() ?? "").Trim();
+
+        if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+        {
+            MenuRenderer.ShowMessage("Delete cancelled.");
+            return;
+        }
+
+        svc.DeleteLodgingOption(activeStay.Id, selected.Id);
+        MenuRenderer.ShowMessage("Lodging option deleted.");
+    }
+
+    public static LodgingOptionSummary SelectLodgingOption(TripService svc, StaySummary activeStay)
+    {
+        var options = svc.GetLodgingOptionsForStay(activeStay.Id);
+        if (options.Count == 0)
+            throw new InvalidOperationException("No lodging options found.");
+
+        MenuRenderer.ShowLodgingOptions(options);
+
+        Console.Write("Select lodging option #: ");
+        var input = (Console.ReadLine() ?? "").Trim();
+
+        if (!int.TryParse(input, out var idx) || idx < 1 || idx > options.Count)
+            throw new ArgumentException("Invalid selection.");
+
+        var selected = options[idx - 1];
+        MenuRenderer.ShowMessage($"Selected lodging option: {selected.PropertyName}");
+        return selected;
+    }
+
+    public static void DeleteActiveLodgingOption(
+        TripService svc,
+        StaySummary activeStay,
+        ref LodgingOptionSummary? activeLodgingOption)
+    {
+        var option = RequireActiveLodgingOption(activeLodgingOption);
+
+        Console.Write($"Type DELETE to remove '{option.PropertyName}': ");
+        var confirm = (Console.ReadLine() ?? "").Trim();
+
+        if (!string.Equals(confirm, "DELETE", StringComparison.Ordinal))
+        {
+            MenuRenderer.ShowMessage("Delete cancelled.");
+            return;
+        }
+
+        svc.DeleteLodgingOption(activeStay.Id, option.Id);
+        activeLodgingOption = null;
+
+        MenuRenderer.ShowMessage("Lodging option deleted.");
+    }
+
+
+
+
     public static void SeedDemoData(TripService svc)
     {
         var trip = svc.CreateTrip("Seed: Japan 2026", 5000m);
@@ -529,6 +629,9 @@ public static class ConsolePrompts
 
     public static FlightOptionSummary? RefreshActiveFlightOption(TripService svc, Guid stayId, Guid flightOptionId) =>
         svc.GetFlightOptionsForStay(stayId).FirstOrDefault(f => f.Id == flightOptionId);
+
+    public static LodgingOptionSummary? RefreshActiveLodgingOption(TripService svc, Guid stayId, Guid lodgingOptionId) =>
+        svc.GetLodgingOptionsForStay(stayId).FirstOrDefault(f => f.Id == lodgingOptionId);
 
 
     public static DateTime ParseDate(string s)
@@ -583,6 +686,8 @@ public static class ConsolePrompts
     public static FlightOptionSummary RequireActiveFlightOption(FlightOptionSummary? activeFlightOption) =>
         activeFlightOption ?? throw new InvalidOperationException("No active flight option selected.");
 
+    public static LodgingOptionSummary RequireActiveLodgingOption(LodgingOptionSummary? activeLodgingOption) =>
+        activeLodgingOption ?? throw new InvalidOperationException("No active lodging option selected.");
 
     public static DateTime ParseDateTime(string s)
     {

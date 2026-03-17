@@ -338,4 +338,59 @@ public class TripService
 
         _repository.Update(trip);
     }
+
+    // LodgingOptions
+    public void AddLodgingOptionToStay(
+        Guid stayId,
+        string url,
+        string propertyName,
+        DateTime checkInDate,
+        DateTime checkOutDate)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        stay.AddLodgingOption(url, propertyName, checkInDate, checkOutDate);
+
+        _repository.Update(trip);
+    }
+
+    public IReadOnlyList<LodgingOptionSummary> GetLodgingOptionsForStay(Guid stayId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        return stay.LodgingOptions
+            .OrderBy(l => l.CheckInDate)
+            .Select(l => new LodgingOptionSummary(
+                l.Id,
+                l.Url,
+                l.CreatedAt,
+                l.LastCheckedAt,
+                l.IsSelected,
+                l.PropertyName,
+                l.CheckInDate,
+                l.CheckOutDate
+            ))
+            .ToList();
+    }
+
+    public void DeleteLodgingOption(Guid stayId, Guid lodgingOptionId)
+    {
+        var trip = _context.ActiveTrip
+            ?? throw new InvalidOperationException("No active trip.");
+
+        var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
+            ?? throw new InvalidOperationException("Stay not found.");
+
+        stay.RemoveLodgingOption(lodgingOptionId);
+
+        _repository.Update(trip);
+    }
 }
