@@ -8,6 +8,7 @@ The system is based on the “A Day in the Life of Ava” planning scenario and 
 ---
 
 [Project Wiki](https://github.com/mualexander/CS690-ADayInTheLifeOfAva/wiki)
+* [User Document](https://github.com/mualexander/CS690-ADayInTheLifeOfAva/wiki/User-document)
 
 ---
 
