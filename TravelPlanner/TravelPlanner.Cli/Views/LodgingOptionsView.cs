@@ -1,203 +1,196 @@
-using System.Collections.ObjectModel;
-using Terminal.Gui;
+using Spectre.Console;
 using TravelPlanner.Core.Services;
 
 namespace TravelPlanner.Cli.Views;
 
-/// <summary>Lodging option management for a stay.</summary>
-public class LodgingOptionsView : Window
+public class LodgingOptionsView
 {
     private readonly TripService _svc;
-    private StaySummary _stay;
+    private readonly StaySummary _stay;
 
-    private readonly ListView _listView;
-    private readonly Label _lProperty, _lCheckIn, _lCheckOut, _lPrice, _lUrl, _lSelected, _lCreated;
-    private List<LodgingOptionSummary> _options = new();
-    private readonly ObservableCollection<string> _listSource = new();
-
-    public LodgingOptionsView(TripService svc, StaySummary stay) : base()
+    public LodgingOptionsView(TripService svc, StaySummary stay)
     {
-        Title = "Lodging Options";
         _svc  = svc;
         _stay = stay;
-        X = 0; Y = 0; Width = Dim.Fill(); Height = Dim.Fill();
-
-        // Left — options list
-        var leftFrame = new FrameView { Title = "Lodging Options", X = 0, Y = 0, Width = Dim.Percent(50), Height = Dim.Fill(3) };
-        _listView = new ListView
-        {
-            X = 0, Y = 0,
-            Width = Dim.Fill(),
-            Height = Dim.Fill(),
-            AllowsMarking = false,
-        };
-        _listView.SetSource(_listSource);
-        _listView.SelectedItemChanged += (_, _) => RefreshDetail();
-        leftFrame.Add(_listView);
-        Add(leftFrame);
-
-        // Right — detail
-        var rightFrame = new FrameView { Title = "Details", X = Pos.Right(leftFrame), Y = 0, Width = Dim.Fill(), Height = Dim.Fill(3) };
-        _lProperty  = new Label { Text = "", X = 1, Y = 0 };
-        _lCheckIn   = new Label { Text = "", X = 1, Y = 1 };
-        _lCheckOut  = new Label { Text = "", X = 1, Y = 2 };
-        _lPrice     = new Label { Text = "", X = 1, Y = 3 };
-        _lUrl       = new Label { Text = "", X = 1, Y = 4 };
-        _lSelected  = new Label { Text = "", X = 1, Y = 5 };
-        _lCreated   = new Label { Text = "", X = 1, Y = 7 };
-        rightFrame.Add(_lProperty, _lCheckIn, _lCheckOut, _lPrice, _lUrl, _lSelected, _lCreated);
-        Add(rightFrame);
-
-        // Buttons
-        var y = Pos.AnchorEnd(3);
-        var btnAdd    = new Button { Text = "_Add",      X = 1,                       Y = y };
-        var btnPrice  = new Button { Text = "_Price",    X = Pos.Right(btnAdd)    + 1, Y = y };
-        var btnUrl    = new Button { Text = "_URL",      X = Pos.Right(btnPrice)  + 1, Y = y };
-        var btnSel    = new Button { Text = "_Select",   X = Pos.Right(btnUrl)    + 1, Y = y };
-        var btnDesel  = new Button { Text = "D_eselect", X = Pos.Right(btnSel)    + 1, Y = y };
-        var btnDelete = new Button { Text = "De_lete",   X = Pos.Right(btnDesel)  + 1, Y = y };
-        var btnBack   = new Button { Text = "(Esc) Back", X = Pos.AnchorEnd(14),       Y = y };
-
-        btnAdd.Accepting    += (_, _) => OnAdd();
-        btnPrice.Accepting  += (_, _) => OnUpdatePrice();
-        btnUrl.Accepting    += (_, _) => OnUpdateUrl();
-        btnSel.Accepting    += (_, _) => OnMarkSelected();
-        btnDesel.Accepting  += (_, _) => OnMarkDeselected();
-        btnDelete.Accepting += (_, _) => OnDelete();
-        btnBack.Accepting   += (_, _) => Application.RequestStop();
-
-        Add(btnAdd, btnPrice, btnUrl, btnSel, btnDesel, btnDelete, btnBack);
-
-        Refresh();
-        Application.KeyDown += OnAppKeyDown;
-        Closed += (_, _) => Application.KeyDown -= OnAppKeyDown;
-        Application.Invoke(() => _listView.SetFocus());
     }
 
-    // ── Key handling ──────────────────────────────────────────────────────────
-
-    private void OnAppKeyDown(object? sender, Key key)
+    public void Run()
     {
-        if (Application.Top != this) return;
-        if (!key.IsAlt && !key.IsCtrl)
+        while (true)
         {
-            if (key.KeyCode == KeyCode.Esc) { Application.RequestStop(); key.Handled = true; return; }
-            if (key.AsRune.Value != 0)
-                switch (char.ToLower((char)key.AsRune.Value))
-                {
-                    case 'a': OnAdd();            key.Handled = true; return;
-                    case 'p': OnUpdatePrice();    key.Handled = true; return;
-                    case 'u': OnUpdateUrl();      key.Handled = true; return;
-                    case 's': OnMarkSelected();   key.Handled = true; return;
-                    case 'd': OnMarkDeselected(); key.Handled = true; return;
-                }
+            AnsiConsole.Clear();
+            Render();
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[grey]Action:[/]")
+                    .AddChoices("Add", "Update Price", "Update URL", "Select", "Deselect", "Delete", "Back"));
+
+            switch (choice)
+            {
+                case "Add":          OnAdd();            break;
+                case "Update Price": OnUpdatePrice();    break;
+                case "Update URL":   OnUpdateUrl();      break;
+                case "Select":       OnMarkSelected();   break;
+                case "Deselect":     OnMarkDeselected(); break;
+                case "Delete":       OnDelete();         break;
+                case "Back":         return;
+            }
         }
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    private List<LodgingOptionSummary> GetOptions() => _svc.GetLodgingOptionsForStay(_stay.Id).ToList();
 
-    private LodgingOptionSummary? Selected =>
-        _options.Count > 0 && _listView.SelectedItem >= 0 && _listView.SelectedItem < _options.Count
-            ? _options[_listView.SelectedItem]
-            : null;
-
-    private void Refresh()
+    private void Render()
     {
-        Title = $"Lodging — {_stay.DisplayKey}";
-        _options = _svc.GetLodgingOptionsForStay(_stay.Id).ToList();
-        _listSource.Clear();
-        foreach (var l in _options)
-            _listSource.Add($" {l.PropertyName}  {l.CheckInDate:MM-dd}→{l.CheckOutDate:MM-dd}{(l.IsSelected ? "  ✓" : "")}");
-        RefreshDetail();
-    }
+        AnsiConsole.Write(new Rule($"[bold deepskyblue1]Lodging — {Markup.Escape(_stay.DisplayKey)}[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.WriteLine();
 
-    private void RefreshDetail()
-    {
-        var l = Selected;
-        if (l is null)
+        var options = GetOptions();
+        if (options.Count == 0)
         {
-            _lProperty.Text = "Select a lodging option to view details.";
-            _lCheckIn.Text  = _lCheckOut.Text = _lPrice.Text = "";
-            _lUrl.Text      = _lSelected.Text = _lCreated.Text = "";
+            AnsiConsole.MarkupLine("[grey italic]No lodging options yet.[/]");
+            AnsiConsole.WriteLine();
             return;
         }
-        _lProperty.Text = $"Property: {l.PropertyName}";
-        _lCheckIn.Text  = $"Check-in:  {l.CheckInDate:yyyy-MM-dd}";
-        _lCheckOut.Text = $"Check-out: {l.CheckOutDate:yyyy-MM-dd}";
-        _lPrice.Text    = $"Price:     {(l.Price.HasValue ? l.Price.Value.ToString("0.00") : "(unknown)")}";
-        _lUrl.Text      = $"URL:       {l.Url}";
-        _lSelected.Text = $"Selected:  {(l.IsSelected ? "Yes ✓" : "No")}";
-        _lCreated.Text  = $"Created:   {l.CreatedAt:yyyy-MM-dd HH:mm} UTC";
-        SetNeedsDraw();
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Grey)
+            .AddColumn("[bold]Property[/]")
+            .AddColumn("[bold]Check-in[/]")
+            .AddColumn("[bold]Check-out[/]")
+            .AddColumn(new TableColumn("[bold]Price[/]").RightAligned())
+            .AddColumn("[bold]Link[/]")
+            .AddColumn("[bold] [/]");
+
+        foreach (var l in options)
+        {
+            var price = l.Price.HasValue ? $"[yellow]${l.Price.Value:0.00}[/]" : "[grey]?[/]";
+            var sel   = l.IsSelected ? "[green]✓[/]" : "";
+            table.AddRow(
+                Markup.Escape(l.PropertyName),
+                l.CheckInDate.ToString("yyyy-MM-dd"),
+                l.CheckOutDate.ToString("yyyy-MM-dd"),
+                price,
+                LinkMarkup(l.Url),
+                sel
+            );
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
     }
 
-    // ── Handlers ─────────────────────────────────────────────────────────────
+    private LodgingOptionSummary? PickOption(string title)
+    {
+        var options = GetOptions();
+        if (options.Count == 0) { AnsiConsole.MarkupLine("[yellow]No lodging options.[/]"); Pause(); return null; }
+        return AnsiConsole.Prompt(
+            new SelectionPrompt<LodgingOptionSummary>()
+                .Title(title)
+                .UseConverter(l =>
+                    $"{Markup.Escape(l.PropertyName)}" +
+                    $"  {l.CheckInDate:MM-dd}→{l.CheckOutDate:MM-dd}" +
+                    (l.IsSelected ? "  [green]✓[/]" : ""))
+                .AddChoices(options));
+    }
 
     private void OnAdd()
     {
-        var url = DialogHelpers.PromptText("Add Lodging Option", "URL:", "");
-        if (string.IsNullOrWhiteSpace(url)) return;
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Lodging Option[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.WriteLine();
 
-        var name = DialogHelpers.PromptText("Add Lodging Option", "Property name:", "");
+        var url  = AnsiConsole.Ask<string>("URL:");
+        if (string.IsNullOrWhiteSpace(url)) return;
+        var name = AnsiConsole.Ask<string>("Property name:");
         if (string.IsNullOrWhiteSpace(name)) return;
 
-        var checkIn = DialogHelpers.PromptDate("Add Lodging Option", "Check-in date", "");
+        var checkIn  = PromptDate("Check-in [grey](yyyy-MM-dd)[/]:");
         if (!checkIn.HasValue) return;
-
-        var checkOut = DialogHelpers.PromptDate("Add Lodging Option", "Check-out date", "");
+        var checkOut = PromptDate("Check-out [grey](yyyy-MM-dd)[/]:");
         if (!checkOut.HasValue) return;
 
-        var price = DialogHelpers.PromptOptionalDecimal("Add Lodging Option", "Price", "");
+        var price = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:");
 
-        try
-        {
-            _svc.AddLodgingOptionToStay(_stay.Id, url, name, checkIn.Value, checkOut.Value, price);
-            Refresh();
-        }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        try { _svc.AddLodgingOptionToStay(_stay.Id, url, name, checkIn.Value, checkOut.Value, price); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
     private void OnUpdatePrice()
     {
-        var l = Selected;
-        if (l is null) { MessageBox.ErrorQuery("", "Select a lodging option first.", "OK"); return; }
-        var price = DialogHelpers.PromptOptionalDecimal("Update Price", "Price", l.Price?.ToString("0.00") ?? "");
-        try { _svc.UpdateLodgingOptionPrice(_stay.Id, l.Id, price); Refresh(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        var l = PickOption("Select lodging to update price:");
+        if (l is null) return;
+        var price = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:", l.Price);
+        try { _svc.UpdateLodgingOptionPrice(_stay.Id, l.Id, price); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
     private void OnUpdateUrl()
     {
-        var l = Selected;
-        if (l is null) { MessageBox.ErrorQuery("", "Select a lodging option first.", "OK"); return; }
-        var newUrl = DialogHelpers.PromptText("Update URL", "New URL:", l.Url);
+        var l = PickOption("Select lodging to update URL:");
+        if (l is null) return;
+        var newUrl = AnsiConsole.Prompt(new TextPrompt<string>("New URL:").DefaultValue(l.Url));
         if (string.IsNullOrWhiteSpace(newUrl)) return;
-        try { _svc.UpdateLodgingOptionUrl(_stay.Id, l.Id, newUrl); Refresh(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        try { _svc.UpdateLodgingOptionUrl(_stay.Id, l.Id, newUrl); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
     private void OnMarkSelected()
     {
-        var l = Selected;
-        if (l is null) { MessageBox.ErrorQuery("", "Select a lodging option first.", "OK"); return; }
-        try { _svc.SelectLodgingOption(_stay.Id, l.Id); Refresh(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        var l = PickOption("Select lodging to mark as selected:");
+        if (l is null) return;
+        try { _svc.SelectLodgingOption(_stay.Id, l.Id); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
     private void OnMarkDeselected()
     {
-        var l = Selected;
-        if (l is null) { MessageBox.ErrorQuery("", "Select a lodging option first.", "OK"); return; }
-        try { _svc.DeselectLodgingOption(_stay.Id, l.Id); Refresh(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        var l = PickOption("Select lodging to deselect:");
+        if (l is null) return;
+        try { _svc.DeselectLodgingOption(_stay.Id, l.Id); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
     private void OnDelete()
     {
-        var l = Selected;
-        if (l is null) { MessageBox.ErrorQuery("", "Select a lodging option first.", "OK"); return; }
-        if (!DialogHelpers.Confirm("Delete Lodging Option", $"Delete '{l.PropertyName}'?")) return;
-        try { _svc.DeleteLodgingOption(_stay.Id, l.Id); Refresh(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        var l = PickOption("Select lodging to delete:");
+        if (l is null) return;
+        if (!AnsiConsole.Confirm($"Delete [bold]{Markup.Escape(l.PropertyName)}[/]?")) return;
+        try { _svc.DeleteLodgingOption(_stay.Id, l.Id); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+    }
+
+    private static DateTime? PromptDate(string prompt)
+    {
+        while (true)
+        {
+            var input = AnsiConsole.Prompt(new TextPrompt<string>(prompt).AllowEmpty());
+            if (string.IsNullOrWhiteSpace(input)) return null;
+            if (DateTime.TryParse(input, out var d)) return d;
+            AnsiConsole.MarkupLine("[red]Use yyyy-MM-dd format.[/]");
+        }
+    }
+
+    private static decimal? PromptOptionalDecimal(string prompt, decimal? current = null)
+    {
+        var tp = new TextPrompt<string>(prompt).AllowEmpty();
+        if (current.HasValue) tp = tp.DefaultValue(current.Value.ToString("0.00"));
+        var input = AnsiConsole.Prompt(tp);
+        if (string.IsNullOrWhiteSpace(input)) return null;
+        if (decimal.TryParse(input, System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.InvariantCulture, out var d)) return d;
+        AnsiConsole.MarkupLine("[red]Invalid amount.[/]");
+        return null;
+    }
+
+    private static string LinkMarkup(string url) =>
+        string.IsNullOrWhiteSpace(url) ? "[grey](no url)[/]" : $"[link={url}]↗ Open[/]";
+
+    private static void Pause()
+    {
+        AnsiConsole.MarkupLine("[grey]Press any key...[/]");
+        Console.ReadKey(intercept: true);
     }
 }

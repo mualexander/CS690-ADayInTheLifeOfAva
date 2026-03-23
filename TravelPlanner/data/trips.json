@@ -9,8 +9,8 @@
         "Id": "724f8654-d001-4665-a8cc-e7a7bec7e443",
         "City": "Hiroshima",
         "Country": "Japan",
-        "StartDate": null,
-        "EndDate": null,
+        "StartDate": "2026-08-20T00:00:00",
+        "EndDate": "2026-08-25T00:00:00",
         "Expenses": [
           {
             "Id": "b8ebbf33-a446-4f55-bd06-cb44ce66878e",
@@ -58,19 +58,31 @@
             "ToAirportCode": "HIJ",
             "DepartTime": "2026-08-19T10:55:00",
             "ArriveTime": "2026-08-20T19:35:00"
+          },
+          {
+            "Id": "c97e4813-f472-4789-bd29-930724d9dbb5",
+            "Url": "https://book-i.jal.co.jp/JLInt/dyn/air/booking/availability;JAL_SESSION_ID=VrqOVysCR4UVVMew6w6fGf5qwrgLa7RGyN-j1ASj!1773962557784?DDS_PREVIOUS_REQUEST_ID=1",
+            "Price": 736.70,
+            "CreatedAt": "2026-03-19T23:26:05.934783Z",
+            "LastCheckedAt": "2026-03-19T23:26:05.9347837Z",
+            "IsSelected": false,
+            "FromAirportCode": "OAK",
+            "ToAirportCode": "HIJ",
+            "DepartTime": "2026-08-19T07:00:00",
+            "ArriveTime": "2026-08-20T21:15:00"
           }
         ],
         "LodgingOptions": [
           {
-            "Id": "6d82f68d-6568-4ee1-8ac1-383f2fb6aaf6",
+            "Id": "e42adefd-0e20-4809-8a12-c2ff60ceb04a",
             "Url": "https://www.marriott.com/en-us/hotels/hijsi-sheraton-grand-hiroshima-hotel/overview/",
-            "Price": 1000,
-            "CreatedAt": "2026-03-17T16:05:43.9680106Z",
-            "LastCheckedAt": "2026-03-19T18:02:50.4118537Z",
+            "Price": 1058.60,
+            "CreatedAt": "2026-03-19T23:37:49.8758252Z",
+            "LastCheckedAt": "2026-03-19T23:37:49.8758279Z",
             "IsSelected": true,
             "PropertyName": "Sheraton Grand Hiroshima Hotel",
-            "CheckInDate": "2027-01-09T00:00:00",
-            "CheckOutDate": "2027-01-13T00:00:00"
+            "CheckInDate": "2026-08-20T00:00:00",
+            "CheckOutDate": "2026-08-24T00:00:00"
           }
         ]
       },
@@ -78,8 +90,8 @@
         "Id": "4110a6bf-ebb0-4d84-a742-da108e3b0d2e",
         "City": "Nara",
         "Country": "Japan",
-        "StartDate": null,
-        "EndDate": null,
+        "StartDate": "2026-08-25T00:00:00",
+        "EndDate": "2026-08-29T00:00:00",
         "Expenses": [
           {
             "Id": "a3a6124c-095b-48f6-8399-0dab001bb38a",
@@ -107,8 +119,33 @@
           }
         ],
         "Bookmarks": [],
-        "FlightOptions": [],
-        "LodgingOptions": []
+        "FlightOptions": [
+          {
+            "Id": "20d73e0b-fe9d-4726-84d0-e31c7362a95e",
+            "Url": "https://www.google.com/travel/flights/search?tfs=CBwQAhojEgoyMDI2LTA4LTI5agwIAxIIL20vMGRxeXdyBwgBEgNPQUtAAUgBcAGCAQsI____________AZgBAg",
+            "Price": 729,
+            "CreatedAt": "2026-03-19T23:31:34.7167435Z",
+            "LastCheckedAt": "2026-03-19T23:31:34.7167459Z",
+            "IsSelected": true,
+            "FromAirportCode": "KIX",
+            "ToAirportCode": "OAK",
+            "DepartTime": "2026-08-29T19:05:00",
+            "ArriveTime": "2026-08-30T12:11:00"
+          }
+        ],
+        "LodgingOptions": [
+          {
+            "Id": "d0408dd6-9a7d-4cbb-a08b-c1e96f9f4fdd",
+            "Url": "https://marriott.com/hotels/travel/osajw-jw-marriott-hotel-nara",
+            "Price": 672.74,
+            "CreatedAt": "2026-03-19T23:41:21.8691605Z",
+            "LastCheckedAt": "2026-03-19T23:41:21.869161Z",
+            "IsSelected": true,
+            "PropertyName": "JW Marriott Hotel Nara",
+            "CheckInDate": "2026-08-25T00:00:00",
+            "CheckOutDate": "2026-08-29T00:00:00"
+          }
+        ]
       }
     ]
   }

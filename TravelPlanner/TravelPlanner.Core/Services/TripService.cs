@@ -100,6 +100,13 @@ public class TripService
         return trip.RemainingBudget();
     }
 
+    public void UpdateTripBudget(decimal newBudget)
+    {
+        var trip = GetActiveTrip();
+        trip.UpdateBudget(newBudget);
+        _repository.Update(trip);
+    }
+
     public void ArchiveActiveTrip()
     {
         var trip = GetActiveTrip();

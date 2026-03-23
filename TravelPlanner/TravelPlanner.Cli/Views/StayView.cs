@@ -1,151 +1,155 @@
-using Terminal.Gui;
+using Spectre.Console;
 using TravelPlanner.Core.Services;
 
 namespace TravelPlanner.Cli.Views;
 
-/// <summary>Shows stay details and provides navigation to expenses/bookmarks/flights/lodging.</summary>
-public class StayView : Window
+public class StayView
 {
     private readonly TripService _svc;
     private readonly InMemoryTripContext _ctx;
     private StaySummary _stay;
 
-    private readonly Label _lCity, _lCountry, _lDates, _lTotal, _lExp, _lFly, _lLodge;
-
-    public StayView(TripService svc, InMemoryTripContext ctx, StaySummary stay) : base()
+    public StayView(TripService svc, InMemoryTripContext ctx, StaySummary stay)
     {
-        Title = "Stay";
-        _svc = svc;
-        _ctx = ctx;
+        _svc  = svc;
+        _ctx  = ctx;
         _stay = stay;
-        X = 0; Y = 0; Width = Dim.Fill(); Height = Dim.Fill();
-
-        // Stay details frame
-        var infoFrame = new FrameView { Title = "Stay Details", X = 0, Y = 0, Width = Dim.Fill(), Height = 9 };
-        _lCity    = new Label { Text = "", X = 1, Y = 0 };
-        _lCountry = new Label { Text = "", X = 1, Y = 1 };
-        _lDates   = new Label { Text = "", X = 1, Y = 2 };
-        _lTotal   = new Label { Text = "", X = 1, Y = 4 };
-        _lExp     = new Label { Text = "", X = 1, Y = 5 };
-        _lFly     = new Label { Text = "", X = 1, Y = 6 };
-        _lLodge   = new Label { Text = "", X = 1, Y = 7 };
-        infoFrame.Add(_lCity, _lCountry, _lDates, _lTotal, _lExp, _lFly, _lLodge);
-        Add(infoFrame);
-
-        // Sub-section navigation
-        var navY = Pos.Bottom(infoFrame) + 1;
-        var lblNav       = new Label { Text = "Navigate to:", X = 1,                          Y = navY };
-        var btnExpenses  = new Button { Text = "_Expenses",   X = 1,                          Y = navY + 1 };
-        var btnBookmarks = new Button { Text = "_Bookmarks",  X = Pos.Right(btnExpenses)  + 1, Y = navY + 1 };
-        var btnFlights   = new Button { Text = "_Flights",    X = Pos.Right(btnBookmarks) + 1, Y = navY + 1 };
-        var btnLodging   = new Button { Text = "_Lodging",    X = Pos.Right(btnFlights)   + 1, Y = navY + 1 };
-
-        btnExpenses.Accepting  += (_, _) => { Application.Run(new ExpensesView(_svc, _stay));       RefreshStay(); };
-        btnBookmarks.Accepting += (_, _) => { Application.Run(new BookmarksView(_svc, _stay));      RefreshStay(); };
-        btnFlights.Accepting   += (_, _) => { Application.Run(new FlightOptionsView(_svc, _stay));  RefreshStay(); };
-        btnLodging.Accepting   += (_, _) => { Application.Run(new LodgingOptionsView(_svc, _stay)); RefreshStay(); };
-
-        Add(lblNav, btnExpenses, btnBookmarks, btnFlights, btnLodging);
-
-        // Edit / action buttons
-        var editY    = Pos.AnchorEnd(3);
-        var lblEdit  = new Label { Text = "Edit stay:", X = 1, Y = editY };
-        var btnPlace   = new Button { Text = "Set _Place",       X = 1,                       Y = editY + 1 };
-        var btnStart   = new Button { Text = "Set S_tart Date",  X = Pos.Right(btnPlace)  + 1, Y = editY + 1 };
-        var btnEnd     = new Button { Text = "Set _End Date",    X = Pos.Right(btnStart)  + 1, Y = editY + 1 };
-        var btnDelStay = new Button { Text = "_Delete Stay",     X = Pos.Right(btnEnd)    + 1, Y = editY + 1 };
-        var btnBack    = new Button { Text = "(Esc) Back",        X = Pos.AnchorEnd(14),        Y = editY + 1 };
-
-        btnPlace.Accepting   += (_, _) => OnSetPlace();
-        btnStart.Accepting   += (_, _) => OnSetStartDate();
-        btnEnd.Accepting     += (_, _) => OnSetEndDate();
-        btnDelStay.Accepting += (_, _) => OnDeleteStay();
-        btnBack.Accepting    += (_, _) => Application.RequestStop();
-
-        Add(lblEdit, btnPlace, btnStart, btnEnd, btnDelStay, btnBack);
-
-        RefreshInfo();
-        Application.KeyDown += OnAppKeyDown;
-        Closed += (_, _) => Application.KeyDown -= OnAppKeyDown;
     }
 
-    // ── Key handling ──────────────────────────────────────────────────────────
-
-    private void OnAppKeyDown(object? sender, Key key)
+    public void Run()
     {
-        if (Application.Top != this) return;
-        if (!key.IsAlt && !key.IsCtrl)
+        while (true)
         {
-            if (key.KeyCode == KeyCode.Esc) { Application.RequestStop(); key.Handled = true; return; }
-            if (key.AsRune.Value != 0)
-                switch (char.ToLower((char)key.AsRune.Value))
-                {
-                    case 'e': Application.Run(new ExpensesView(_svc, _stay));       RefreshStay(); key.Handled = true; return;
-                    case 'b': Application.Run(new BookmarksView(_svc, _stay));      RefreshStay(); key.Handled = true; return;
-                    case 'f': Application.Run(new FlightOptionsView(_svc, _stay));  RefreshStay(); key.Handled = true; return;
-                    case 'l': Application.Run(new LodgingOptionsView(_svc, _stay)); RefreshStay(); key.Handled = true; return;
-                    case 'p': OnSetPlace();    key.Handled = true; return;
-                    case 'd': OnDeleteStay();  key.Handled = true; return;
-                }
+            // Refresh stay data — sub-views may have changed totals
+            var updated = _svc.GetStays().FirstOrDefault(s => s.Id == _stay.Id);
+            if (updated is null) return; // was deleted from another path
+            _stay = updated;
+
+            AnsiConsole.Clear();
+            Render();
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[grey]Action:[/]")
+                    .AddChoices(
+                        "Expenses", "Bookmarks", "Flights", "Lodging",
+                        "Edit Place", "Set Start Date", "Set End Date",
+                        "Delete Stay", "Back"));
+
+            switch (choice)
+            {
+                case "Expenses":       new ExpensesView(_svc, _stay).Run();          break;
+                case "Bookmarks":      new BookmarksView(_svc, _stay).Run();         break;
+                case "Flights":        new FlightOptionsView(_svc, _stay).Run();     break;
+                case "Lodging":        new LodgingOptionsView(_svc, _stay).Run();    break;
+                case "Edit Place":     OnEditPlace();                                break;
+                case "Set Start Date": OnSetStartDate();                             break;
+                case "Set End Date":   OnSetEndDate();                               break;
+                case "Delete Stay":    if (OnDeleteStay()) return;                   break;
+                case "Back":           return;
+            }
         }
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    private void RefreshStay()
+    private void Render()
     {
-        var updated = _svc.GetStays().FirstOrDefault(s => s.Id == _stay.Id);
-        if (updated is not null) _stay = updated;
-        RefreshInfo();
+        AnsiConsole.Write(new Rule($"[bold deepskyblue1]Stay: {Markup.Escape(_stay.DisplayKey)}[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.WriteLine();
+
+        var dates = _stay.StartDate.HasValue
+            ? $"{_stay.StartDate:yyyy-MM-dd} → {_stay.EndDate:yyyy-MM-dd}"
+            : "[grey](not set)[/]";
+
+        var grid = new Grid().AddColumn().AddColumn();
+        grid.AddRow("[bold]City:[/]",    Markup.Escape(_stay.City));
+        grid.AddRow("[bold]Country:[/]", Markup.Escape(_stay.Country));
+        grid.AddRow("[bold]Dates:[/]",   dates);
+        grid.AddRow("", "");
+        grid.AddRow("[bold]Total:[/]",   $"[yellow]${_stay.TotalPlannedCost:0.00}[/]");
+        grid.AddRow("  Expenses:",       $"${_stay.ExpenseTotal:0.00}");
+        grid.AddRow("  Flights:",        $"${_stay.SelectedFlightTotal:0.00}");
+        grid.AddRow("  Lodging:",        $"${_stay.SelectedLodgingTotal:0.00}");
+
+        // Show links for any selected flights and lodging
+        var selectedFlights = _svc.GetFlightOptionsForStay(_stay.Id).Where(f => f.IsSelected).ToList();
+        var selectedLodging = _svc.GetLodgingOptionsForStay(_stay.Id).Where(l => l.IsSelected).ToList();
+        if (selectedFlights.Count > 0 || selectedLodging.Count > 0)
+        {
+            grid.AddRow("", "");
+            grid.AddRow("[bold]Selected travel options:[/]", "");
+            foreach (var f in selectedFlights)
+                grid.AddRow(
+                    $"  ✈ {Markup.Escape(f.FromAirportCode)}→{Markup.Escape(f.ToAirportCode)}",
+                    LinkMarkup(f.Url));
+            foreach (var l in selectedLodging)
+                grid.AddRow(
+                    $"  🏨 {Markup.Escape(l.PropertyName)}",
+                    LinkMarkup(l.Url));
+        }
+
+        AnsiConsole.Write(new Panel(grid).Border(BoxBorder.Rounded).BorderColor(Color.Grey));
+        AnsiConsole.WriteLine();
     }
 
-    private void RefreshInfo()
-    {
-        Title         = $"Stay: {_stay.DisplayKey}";
-        _lCity.Text   = $"City:     {_stay.City}";
-        _lCountry.Text = $"Country:  {_stay.Country}";
-        _lDates.Text  = _stay.StartDate.HasValue
-            ? $"Dates:    {_stay.StartDate:yyyy-MM-dd} → {_stay.EndDate:yyyy-MM-dd}"
-            : "Dates:    (not set)";
-        _lTotal.Text  = $"Total Cost:   {_stay.TotalPlannedCost:0.00}";
-        _lExp.Text    = $"  Expenses:   {_stay.ExpenseTotal:0.00}";
-        _lFly.Text    = $"  Flights:    {_stay.SelectedFlightTotal:0.00}";
-        _lLodge.Text  = $"  Lodging:    {_stay.SelectedLodgingTotal:0.00}";
-        SetNeedsDraw();
-    }
+    private static string LinkMarkup(string url) =>
+        string.IsNullOrWhiteSpace(url) ? "[grey](no url)[/]" : $"[link={url}]↗ Open[/]";
 
-    // ── Handlers ─────────────────────────────────────────────────────────────
-
-    private void OnSetPlace()
+    private void OnEditPlace()
     {
-        if (!DialogHelpers.PromptTwoFields("Set Place", "City:", _stay.City, "Country:", _stay.Country, out var city, out var country))
-            return;
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]Edit Place[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.WriteLine();
+
+        var city = AnsiConsole.Prompt(
+            new TextPrompt<string>("City:").DefaultValue(_stay.City));
+        var country = AnsiConsole.Prompt(
+            new TextPrompt<string>("Country:").DefaultValue(_stay.Country));
+
         if (string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(country))
-        { MessageBox.ErrorQuery("Validation", "City and Country are required.", "OK"); return; }
-        try { _svc.UpdateStayPlace(_stay.Id, city, country); RefreshStay(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        { AnsiConsole.MarkupLine("[red]City and Country are required.[/]"); Pause(); return; }
+
+        try { _svc.UpdateStayPlace(_stay.Id, city, country); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
     private void OnSetStartDate()
     {
-        var date = DialogHelpers.PromptDate("Set Start Date", "Start date", _stay.StartDate?.ToString("yyyy-MM-dd") ?? "");
-        if (!date.HasValue) return;
-        try { _svc.UpdateStayStartDate(_stay.Id, date.Value); RefreshStay(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        var current = _stay.StartDate?.ToString("yyyy-MM-dd");
+        var prompt  = current is not null
+            ? new TextPrompt<string>($"Start date [grey](yyyy-MM-dd)[/]:").DefaultValue(current)
+            : new TextPrompt<string>("Start date [grey](yyyy-MM-dd)[/]:").AllowEmpty();
+        var input = AnsiConsole.Prompt(prompt);
+        if (string.IsNullOrWhiteSpace(input)) return;
+        if (!DateTime.TryParse(input, out var date))
+        { AnsiConsole.MarkupLine("[red]Invalid date.[/]"); Pause(); return; }
+        try { _svc.UpdateStayStartDate(_stay.Id, date); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
     private void OnSetEndDate()
     {
-        var date = DialogHelpers.PromptDate("Set End Date", "End date", _stay.EndDate?.ToString("yyyy-MM-dd") ?? "");
-        if (!date.HasValue) return;
-        try { _svc.UpdateStayEndDate(_stay.Id, date.Value); RefreshStay(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        var current = _stay.EndDate?.ToString("yyyy-MM-dd");
+        var prompt  = current is not null
+            ? new TextPrompt<string>($"End date [grey](yyyy-MM-dd)[/]:").DefaultValue(current)
+            : new TextPrompt<string>("End date [grey](yyyy-MM-dd)[/]:").AllowEmpty();
+        var input = AnsiConsole.Prompt(prompt);
+        if (string.IsNullOrWhiteSpace(input)) return;
+        if (!DateTime.TryParse(input, out var date))
+        { AnsiConsole.MarkupLine("[red]Invalid date.[/]"); Pause(); return; }
+        try { _svc.UpdateStayEndDate(_stay.Id, date); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
-    private void OnDeleteStay()
+    private bool OnDeleteStay()
     {
-        if (!DialogHelpers.Confirm("Delete Stay", $"Delete '{_stay.DisplayKey}'? This cannot be undone.")) return;
-        try { _svc.DeleteStay(_stay.Id); Application.RequestStop(); }
-        catch (Exception ex) { MessageBox.ErrorQuery("Error", ex.Message, "OK"); }
+        if (!AnsiConsole.Confirm($"Delete [bold]{Markup.Escape(_stay.DisplayKey)}[/]? This cannot be undone.")) return false;
+        try { _svc.DeleteStay(_stay.Id); return true; }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); return false; }
+    }
+
+    private static void Pause()
+    {
+        AnsiConsole.MarkupLine("[grey]Press any key...[/]");
+        Console.ReadKey(intercept: true);
     }
 }
