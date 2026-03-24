@@ -79,11 +79,11 @@ public class StayView
             grid.AddRow("[bold]Selected travel options:[/]", "");
             foreach (var f in selectedFlights)
                 grid.AddRow(
-                    $"  ✈ {Markup.Escape(f.FromAirportCode)}→{Markup.Escape(f.ToAirportCode)}",
+                    $"  Flight: {Markup.Escape(f.FromAirportCode)}→{Markup.Escape(f.ToAirportCode)}",
                     LinkMarkup(f.Url));
             foreach (var l in selectedLodging)
                 grid.AddRow(
-                    $"  🏨 {Markup.Escape(l.PropertyName)}",
+                    $"  Lodging: {Markup.Escape(l.PropertyName)}",
                     LinkMarkup(l.Url));
         }
 

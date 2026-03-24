@@ -1,6 +1,9 @@
+using System.Text;
 using TravelPlanner.Cli.Views;
 using TravelPlanner.Core.Repositories;
 using TravelPlanner.Core.Services;
+
+Console.OutputEncoding = Encoding.UTF8;
 
 const string DataPath = "data/trips.json";
 
