@@ -25,19 +25,6 @@ public class FlightOptionTests
     }
 
     [Fact]
-    public void Constructor_RejectsArrivalBeforeDeparture()
-    {
-        Assert.Throws<ArgumentException>(() =>
-            new FlightOption(
-                "https://example.com/flight",
-                "SFO",
-                "HND",
-                new DateTime(2026, 1, 11, 12, 0, 0),
-                new DateTime(2026, 1, 10, 8, 0, 0)
-            ));
-    }
-
-    [Fact]
     public void UpdateUrl_ChangesUrl()
     {
         var flight = new FlightOption(

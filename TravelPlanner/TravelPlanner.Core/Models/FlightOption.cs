@@ -23,9 +23,6 @@ public class FlightOption : TravelOption
         if (string.IsNullOrWhiteSpace(toAirportCode))
             throw new ArgumentException("To airport code cannot be empty.", nameof(toAirportCode));
 
-        if (arriveTime < departTime)
-            throw new ArgumentException("Arrival time cannot be before departure time.");
-
         FromAirportCode = NormalizeAirportCode(fromAirportCode);
         ToAirportCode = NormalizeAirportCode(toAirportCode);
         DepartTime = departTime;
@@ -46,9 +43,6 @@ public class FlightOption : TravelOption
 
     public void UpdateTimes(DateTime departTime, DateTime arriveTime)
     {
-        if (arriveTime < departTime)
-            throw new ArgumentException("Arrival time cannot be before departure time.");
-
         DepartTime = departTime;
         ArriveTime = arriveTime;
     }
