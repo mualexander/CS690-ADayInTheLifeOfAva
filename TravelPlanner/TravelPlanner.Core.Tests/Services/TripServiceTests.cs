@@ -982,4 +982,186 @@ public class TripServiceTests
         Assert.False(updated.IsSelected);
     }
     #endregion
+
+    #region UpdateTripBudget Tests
+
+    [Fact]
+    public void UpdateTripBudget_UpdatesActiveTripBudget()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.SelectTrip(trip.Id);
+
+        svc.UpdateTripBudget(7500m);
+
+        var summary = svc.GetTrips().Single();
+        Assert.Equal(7500m, summary.TotalBudget);
+    }
+
+    [Fact]
+    public void UpdateTripBudget_ThrowsWhenNoActiveTrip()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        Assert.Throws<InvalidOperationException>(() => svc.UpdateTripBudget(1000m));
+    }
+
+    #endregion
+
+    #region CreateTrip / DeleteTrip Tests
+
+    [Fact]
+    public void CreateTrip_ThrowsOnDuplicateName()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Japan 2026", 5000m);
+
+        Assert.Throws<InvalidOperationException>(() => svc.CreateTrip("Japan 2026", 3000m));
+    }
+
+    [Fact]
+    public void CreateTrip_DuplicateCheck_IsCaseInsensitive()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Japan 2026", 5000m);
+
+        Assert.Throws<InvalidOperationException>(() => svc.CreateTrip("japan 2026", 3000m));
+    }
+
+    [Fact]
+    public void DeleteTrip_RemovesTripFromRepository()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Japan 2026", 5000m);
+        svc.DeleteTrip(trip.Id);
+
+        Assert.Empty(svc.GetTrips());
+    }
+
+    #endregion
+
+    #region Ordering Tests
+
+    [Fact]
+    public void GetExpensesForStay_ReturnsExpensesOrderedByName()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddExpenseToStay(stayId, "Taxis",    20m, ExpenseCategory.Transportation);
+        svc.AddExpenseToStay(stayId, "Breakfast", 10m, ExpenseCategory.Food);
+        svc.AddExpenseToStay(stayId, "Museum",    15m, ExpenseCategory.Activities);
+
+        var names = svc.GetExpensesForStay(stayId).Select(e => e.Name).ToList();
+        Assert.Equal(new[] { "Breakfast", "Museum", "Taxis" }, names);
+    }
+
+    [Fact]
+    public void GetBookmarksForStay_ReturnsBookmarksOrderedByTitle()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddBookmarkToStay(stayId, "Tsukiji Market", "https://example.com/tsukiji");
+        svc.AddBookmarkToStay(stayId, "Akihabara Guide", "https://example.com/akihabara");
+        svc.AddBookmarkToStay(stayId, "Shinjuku Tips", "https://example.com/shinjuku");
+
+        var titles = svc.GetBookmarksForStay(stayId).Select(b => b.Title).ToList();
+        Assert.Equal(new[] { "Akihabara Guide", "Shinjuku Tips", "Tsukiji Market" }, titles);
+    }
+
+    [Fact]
+    public void GetFlightOptionsForStay_ReturnsOptionsOrderedByDepartureTime()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(stayId, "https://example.com/b", "SFO", "HND",
+            new DateTime(2026, 1, 15, 14, 0, 0), new DateTime(2026, 1, 16, 18, 0, 0));
+        svc.AddFlightOptionToStay(stayId, "https://example.com/a", "LAX", "NRT",
+            new DateTime(2026, 1, 10, 8, 0, 0),  new DateTime(2026, 1, 11, 12, 0, 0));
+
+        var departures = svc.GetFlightOptionsForStay(stayId).Select(f => f.DepartTime).ToList();
+        Assert.True(departures[0] < departures[1]);
+    }
+
+    #endregion
+
+    #region UpdateFlightOptionUrl / UpdateLodgingOptionUrl Tests
+
+    [Fact]
+    public void UpdateFlightOptionUrl_ChangesUrl()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(stayId, "https://old.example", "SFO", "HND",
+            new DateTime(2026, 1, 10, 8, 0, 0), new DateTime(2026, 1, 11, 12, 0, 0));
+        var flightId = svc.GetFlightOptionsForStay(stayId).Single().Id;
+
+        svc.UpdateFlightOptionUrl(stayId, flightId, "https://new.example");
+
+        Assert.Equal("https://new.example", svc.GetFlightOptionsForStay(stayId).Single().Url);
+    }
+
+    [Fact]
+    public void UpdateLodgingOptionUrl_ChangesUrl()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(trip.Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddLodgingOptionToStay(stayId, "https://old.example", "Hotel A",
+            new DateTime(2026, 4, 10), new DateTime(2026, 4, 14));
+        var lodgingId = svc.GetLodgingOptionsForStay(stayId).Single().Id;
+
+        svc.UpdateLodgingOptionUrl(stayId, lodgingId, "https://new.example");
+
+        Assert.Equal("https://new.example", svc.GetLodgingOptionsForStay(stayId).Single().Url);
+    }
+
+    #endregion
 }
