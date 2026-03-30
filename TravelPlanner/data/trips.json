@@ -2,7 +2,7 @@
   {
     "Id": "7bc497a0-8950-4ab5-9c7b-6141772d8e66",
     "Name": "New Zealand 2026",
-    "TotalBudget": 8000,
+    "TotalBudget": 6000,
     "CreatedAt": "2026-03-24T14:38:29.0540069Z",
     "Stays": [
       {
@@ -482,10 +482,63 @@
             "ToAirportCode": "SFO",
             "DepartTime": "2026-11-11T14:50:00",
             "ArriveTime": "2026-11-11T14:50:00"
+          },
+          {
+            "Id": "df62759d-fd91-4f23-ab32-c718c6243155",
+            "Url": "https://www.google.com/travel/flights/s/fb4Ju8huaBnCKMFm7",
+            "Price": 100,
+            "CreatedAt": "2026-03-30T21:32:52.7112948Z",
+            "LastCheckedAt": "2026-03-30T21:32:52.7112978Z",
+            "IsSelected": true,
+            "FromAirportCode": "ZQN",
+            "ToAirportCode": "AKL",
+            "DepartTime": "2026-11-10T12:50:00",
+            "ArriveTime": "2026-11-10T14:40:00"
           }
         ],
+        "LodgingOptions": [
+          {
+            "Id": "e90be7fb-e82a-4e1c-9e5e-55968a3acfd6",
+            "Url": "https://www.marriott.com/en-us/hotels/aklfp-four-points-auckland/overview/",
+            "Price": 265.77,
+            "CreatedAt": "2026-03-30T21:44:13.5648199Z",
+            "LastCheckedAt": "2026-03-30T21:44:13.5648225Z",
+            "IsSelected": true,
+            "PropertyName": "Four Points by Sheraton Auckland",
+            "CheckInDate": "2026-11-10T00:00:00",
+            "CheckOutDate": "2026-11-11T00:00:00"
+          }
+        ]
+      }
+    ],
+    "WarnOnOverBudget": true
+  },
+  {
+    "Id": "334ad383-6cf6-401b-bd8c-4caf71678624",
+    "Name": "Japan 2027",
+    "TotalBudget": 7000,
+    "CreatedAt": "2026-03-25T04:04:11.1934095Z",
+    "Stays": [
+      {
+        "Id": "1f80f51e-d81c-4c90-9655-6369aaa83e14",
+        "City": "Tokyo",
+        "Country": "Japan",
+        "StartDate": "2027-01-01T00:00:00",
+        "EndDate": "2027-01-05T00:00:00",
+        "Expenses": [],
+        "Bookmarks": [
+          {
+            "Id": "fd8ff48b-f9ea-498c-8bb9-55caad0a7a39",
+            "Title": "Vegan Ramen",
+            "Url": "https://www.itravelforveganfood.com/articles/where-to-find-the-best-vegan-ramen-in-japan",
+            "Notes": "Covers Tokyo and Osaka",
+            "CreatedAt": "2026-03-25T04:05:36.7979171Z"
+          }
+        ],
+        "FlightOptions": [],
         "LodgingOptions": []
       }
-    ]
+    ],
+    "WarnOnOverBudget": true
   }
 ]

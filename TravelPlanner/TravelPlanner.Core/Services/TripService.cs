@@ -100,6 +100,44 @@ public class TripService
         return trip.RemainingBudget();
     }
 
+    public IReadOnlyList<CostItemSummary> GetTopCostItems(int count)
+    {
+        var trip = GetActiveTrip();
+        var items = new List<CostItemSummary>();
+
+        foreach (var stay in trip.Stays)
+        {
+            foreach (var e in stay.Expenses)
+                items.Add(new CostItemSummary(stay.DisplayKey, "Expense", $"{e.Category} - {e.Name}", e.Amount));
+
+            foreach (var f in stay.FlightOptions.Where(f => f.IsSelected && f.Price.HasValue))
+                items.Add(new CostItemSummary(stay.DisplayKey, "Flight", $"{f.FromAirportCode}->{f.ToAirportCode}", f.Price!.Value));
+
+            foreach (var l in stay.LodgingOptions.Where(l => l.IsSelected && l.Price.HasValue))
+                items.Add(new CostItemSummary(stay.DisplayKey, "Lodging", l.PropertyName, l.Price!.Value));
+        }
+
+        return items.OrderByDescending(i => i.Price).Take(count).ToList();
+    }
+
+    public bool GetWarnOnOverBudget()
+    {
+        return GetActiveTrip().WarnOnOverBudget;
+    }
+
+    public bool IsOverBudget()
+    {
+        var trip = GetActiveTrip();
+        return trip.TotalBudget > 0 && trip.TotalPlannedCost() > trip.TotalBudget;
+    }
+
+    public void SetWarnOnOverBudget(bool warn)
+    {
+        var trip = GetActiveTrip();
+        trip.SetWarnOnOverBudget(warn);
+        _repository.Update(trip);
+    }
+
     public void UpdateTripBudget(decimal newBudget)
     {
         var trip = GetActiveTrip();

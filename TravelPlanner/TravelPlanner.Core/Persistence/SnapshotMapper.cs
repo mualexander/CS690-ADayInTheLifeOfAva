@@ -12,7 +12,7 @@ public static class SnapshotMapper
             trip.TotalBudget,
             trip.CreatedAt,
             trip.Stays.Select(ToSnapshot).ToList()
-        );
+        ) { WarnOnOverBudget = trip.WarnOnOverBudget };
     }
 
     private static StaySnapshot ToSnapshot(Stay stay)
@@ -86,7 +86,8 @@ public static class SnapshotMapper
 
     public static Trip FromSnapshot(TripSnapshot snap)
     {
-        var trip = Trip.Hydrate(snap.Id, snap.Name, snap.TotalBudget, snap.CreatedAt);
+        var warnOnOverBudget = snap.WarnOnOverBudget ?? (snap.TotalBudget > 0);
+        var trip = Trip.Hydrate(snap.Id, snap.Name, snap.TotalBudget, snap.CreatedAt, warnOnOverBudget);
 
         foreach (var staySnap in snap.Stays)
         {

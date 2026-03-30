@@ -141,7 +141,11 @@ public class LodgingOptionsView
     {
         var l = PickOption("Select lodging to mark as selected:");
         if (l is null) return;
-        try { _svc.SelectLodgingOption(_stay.Id, l.Id); }
+        try
+        {
+            _svc.SelectLodgingOption(_stay.Id, l.Id);
+            BudgetWarning.ShowIfOverBudget(_svc);
+        }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 

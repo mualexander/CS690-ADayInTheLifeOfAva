@@ -117,6 +117,7 @@ public class ExpensesView
         {
             _svc.AddExpenseToStay(_stay.Id, name, amount, category,
                 string.IsNullOrWhiteSpace(notes) ? null : notes);
+            BudgetWarning.ShowIfOverBudget(_svc);
         }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
