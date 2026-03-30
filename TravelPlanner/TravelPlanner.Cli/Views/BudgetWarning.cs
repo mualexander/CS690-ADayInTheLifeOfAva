@@ -9,11 +9,17 @@ internal static class BudgetWarning
     {
         if (!svc.GetWarnOnOverBudget() || !svc.IsOverBudget()) return;
 
+        var topItems = svc.GetTopCostItems(3);
+
+        var lines = new System.Text.StringBuilder();
+        lines.AppendLine("[yellow bold]This trip is over budget.[/]");
+        lines.AppendLine();
+        lines.AppendLine("[bold]Highest cost items:[/]");
+        foreach (var i in topItems)
+            lines.AppendLine($"  [grey]{Markup.Escape(i.StayDisplayKey)}[/] \u2013 {Markup.Escape(i.TypeLabel)} \u2013 {Markup.Escape(i.Description)}  [yellow]${i.Price:0.00}[/]");
+
         AnsiConsole.WriteLine();
-        AnsiConsole.Write(
-            new Panel("[yellow bold]This trip is over budget.[/]")
-                .BorderColor(Color.Yellow)
-                .Header("[yellow] ! Over Budget [/]"));
+        AnsiConsole.Write(new Panel(new Markup(lines.ToString().TrimEnd())).BorderColor(Color.Yellow).Header("[yellow] ! Over Budget [/]"));
 
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()

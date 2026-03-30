@@ -477,7 +477,7 @@
             "Price": 436,
             "CreatedAt": "2026-03-24T22:21:43.602265Z",
             "LastCheckedAt": "2026-03-24T22:21:43.6022655Z",
-            "IsSelected": true,
+            "IsSelected": false,
             "FromAirportCode": "AKL",
             "ToAirportCode": "SFO",
             "DepartTime": "2026-11-11T14:50:00",
