@@ -11,7 +11,7 @@ public class Trip
     public decimal TotalBudget { get; private set; }
     public DateTime CreatedAt { get; internal set; }
     public bool IsArchived { get; private set; }
-
+    public bool WarnOnOverBudget { get; private set; }
 
     private readonly List<Stay> _stays = new();
     public IReadOnlyCollection<Stay> Stays => _stays.AsReadOnly();
@@ -24,6 +24,7 @@ public class Trip
         Id = Guid.NewGuid();
         Name = name.Trim();
         TotalBudget = totalBudget;
+        WarnOnOverBudget = totalBudget > 0;
         CreatedAt = DateTime.UtcNow;
     }
 
@@ -40,9 +41,17 @@ public class Trip
     public void UpdateBudget(decimal newBudget)
     {
         EnsureNotArchived();
-        
+
         if (newBudget < 0) throw new ArgumentException("Budget cannot be negative.");
+        if (TotalBudget == 0 && newBudget > 0)
+            WarnOnOverBudget = true;
         TotalBudget = newBudget;
+    }
+
+    public void SetWarnOnOverBudget(bool warn)
+    {
+        EnsureNotArchived();
+        WarnOnOverBudget = warn;
     }
 
     // Route A: no uniqueness constraints. Add as many Tokyo stays as you want.
@@ -88,11 +97,12 @@ public class Trip
 
     public decimal RemainingBudget() => TotalBudget - TotalPlannedCost();
 
-    internal static Trip Hydrate(Guid id, string name, decimal totalBudget, DateTime createdAt)
+    internal static Trip Hydrate(Guid id, string name, decimal totalBudget, DateTime createdAt, bool warnOnOverBudget)
     {
         var trip = new Trip(name, totalBudget);
         trip.Id = id;
         trip.CreatedAt = createdAt;
+        trip.WarnOnOverBudget = warnOnOverBudget;
         return trip;
     }
 

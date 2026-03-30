@@ -24,16 +24,17 @@ public class TripView
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[grey]Action:[/]")
-                    .AddChoices("Add Stay", "Open Stay", "Delete Stay", "Update Budget", "Archive Trip", "Back"));
+                    .AddChoices("Add Stay", "Open Stay", "Delete Stay", "Update Budget", "Toggle Over-Budget Warning", "Archive Trip", "Back"));
 
             switch (choice)
             {
-                case "Add Stay":     OnAddStay();              break;
-                case "Open Stay":    OnOpenStay();             break;
-                case "Delete Stay":  OnDeleteStay();           break;
-                case "Update Budget": OnUpdateBudget();         break;
-                case "Archive Trip": if (OnArchive()) return;  break;
-                case "Back":         return;
+                case "Add Stay":                   OnAddStay();                      break;
+                case "Open Stay":                  OnOpenStay();                     break;
+                case "Delete Stay":                OnDeleteStay();                   break;
+                case "Update Budget":              OnUpdateBudget();                 break;
+                case "Toggle Over-Budget Warning": OnToggleWarnOnOverBudget();       break;
+                case "Archive Trip":               if (OnArchive()) return;          break;
+                case "Back":                       return;
             }
         }
     }
@@ -47,10 +48,14 @@ public class TripView
         if (trip is not null)
         {
             var remainColor = trip.RemainingBudget() >= 0 ? "green" : "red";
+            var warnStatus = trip.TotalBudget > 0
+                ? (trip.WarnOnOverBudget ? "  [grey]Warnings: On[/]" : "  [grey]Warnings: Off[/]")
+                : "";
             AnsiConsole.MarkupLine(
                 $"  Budget: [yellow]${trip.TotalBudget:0.00}[/]   " +
                 $"Cost: ${trip.TotalPlannedCost():0.00}   " +
-                $"Remaining: [{remainColor}]${trip.RemainingBudget():0.00}[/]");
+                $"Remaining: [{remainColor}]${trip.RemainingBudget():0.00}[/]" +
+                warnStatus);
         }
 
         AnsiConsole.WriteLine();
@@ -146,6 +151,21 @@ public class TripView
                 System.Globalization.CultureInfo.InvariantCulture, out var budget) || budget < 0)
         { AnsiConsole.MarkupLine("[red]Invalid budget.[/]"); Pause(); return; }
         try { _svc.UpdateTripBudget(budget); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+    }
+
+    private void OnToggleWarnOnOverBudget()
+    {
+        var current = _ctx.ActiveTrip?.WarnOnOverBudget ?? false;
+        var newValue = !current;
+        try
+        {
+            _svc.SetWarnOnOverBudget(newValue);
+            AnsiConsole.MarkupLine(newValue
+                ? "[green]Over-budget warnings enabled.[/]"
+                : "[grey]Over-budget warnings disabled.[/]");
+            Pause();
+        }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 

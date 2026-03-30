@@ -143,7 +143,11 @@ public class FlightOptionsView
     {
         var f = PickOption("Select flight to mark as selected:");
         if (f is null) return;
-        try { _svc.SelectFlightOption(_stay.Id, f.Id); }
+        try
+        {
+            _svc.SelectFlightOption(_stay.Id, f.Id);
+            BudgetWarning.ShowIfOverBudget(_svc);
+        }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 

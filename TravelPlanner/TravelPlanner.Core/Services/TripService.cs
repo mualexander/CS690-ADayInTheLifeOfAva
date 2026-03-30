@@ -100,6 +100,24 @@ public class TripService
         return trip.RemainingBudget();
     }
 
+    public bool GetWarnOnOverBudget()
+    {
+        return GetActiveTrip().WarnOnOverBudget;
+    }
+
+    public bool IsOverBudget()
+    {
+        var trip = GetActiveTrip();
+        return trip.TotalBudget > 0 && trip.TotalPlannedCost() > trip.TotalBudget;
+    }
+
+    public void SetWarnOnOverBudget(bool warn)
+    {
+        var trip = GetActiveTrip();
+        trip.SetWarnOnOverBudget(warn);
+        _repository.Update(trip);
+    }
+
     public void UpdateTripBudget(decimal newBudget)
     {
         var trip = GetActiveTrip();
