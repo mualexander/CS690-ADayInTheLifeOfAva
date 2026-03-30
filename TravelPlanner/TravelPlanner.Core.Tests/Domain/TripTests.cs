@@ -8,6 +8,41 @@ namespace TravelPlanner.Core.Tests.Domain;
 public class TripTests
 {
     [Fact]
+    public void Constructor_SetsFieldsCorrectly()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+
+        Assert.NotEqual(Guid.Empty, trip.Id);
+        Assert.Equal("Japan 2026", trip.Name);
+        Assert.Equal(5000m, trip.TotalBudget);
+        Assert.False(trip.IsArchived);
+        Assert.Empty(trip.Stays);
+    }
+
+    [Fact]
+    public void Constructor_AllowsZeroBudget()
+    {
+        var trip = new Trip("Budget Trip", 0m);
+        Assert.Equal(0m, trip.TotalBudget);
+    }
+
+    [Fact]
+    public void Rename_ChangesName()
+    {
+        var trip = new Trip("Japan", 1000m);
+        trip.Rename("Japan Spring 2026");
+        Assert.Equal("Japan Spring 2026", trip.Name);
+    }
+
+    [Fact]
+    public void UpdateBudget_ChangesValue()
+    {
+        var trip = new Trip("Japan", 1000m);
+        trip.UpdateBudget(2000m);
+        Assert.Equal(2000m, trip.TotalBudget);
+    }
+
+    [Fact]
     public void Constructor_RejectsBlankName()
     {
         Assert.Throws<ArgumentException>(() => new Trip("", 1000m));

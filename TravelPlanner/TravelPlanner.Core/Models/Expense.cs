@@ -14,10 +14,11 @@ public class Expense
 
     public Expense(string name, decimal amount, ExpenseCategory category, string? notes = null)
     {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Expense name cannot be empty.", nameof(name));
         if (amount <= 0) throw new ArgumentException("Expense amount must be > 0.", nameof(amount));
 
         Id = Guid.NewGuid();
-        Name = name;
+        Name = name.Trim();
         Amount = amount;
         Category = category;
         Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
@@ -34,6 +35,7 @@ public class Expense
 
     public void UpdateAmount(decimal newAmount)
     {
+        if (newAmount <= 0) throw new ArgumentException("Expense amount must be > 0.", nameof(newAmount));
         Amount = newAmount;
     }
 

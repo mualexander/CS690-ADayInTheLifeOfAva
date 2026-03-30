@@ -393,6 +393,29 @@ public class StayTests
     #endregion
 
     [Fact]
+    public void HasDates_ReturnsFalse_WhenNoDatesSet()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        Assert.False(stay.HasDates);
+        Assert.Null(stay.Days);
+        Assert.Null(stay.Nights);
+    }
+
+    [Fact]
+    public void ClearDates_RemovesDates()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        stay.SetDates(new DateTime(2026, 1, 10), new DateTime(2026, 1, 14));
+        Assert.True(stay.HasDates);
+
+        stay.ClearDates();
+
+        Assert.False(stay.HasDates);
+        Assert.Null(stay.StartDate);
+        Assert.Null(stay.EndDate);
+    }
+
+    [Fact]
     public void TotalPlannedCost_IncludesExpensesAndSelectedTravelOptions()
     {
         var stay = new Stay(new Place("Tokyo", "Japan"));
