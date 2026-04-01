@@ -1,14 +1,12 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace TravelPlanner.Core.Services;
 
-public record BookmarkSummary(
-    Guid Id,
+public record TagSearchResultSummary(
+    string TripName,
+    string StayDisplayKey,
     string Title,
     string Url,
     string? Notes,
-    DateTime CreatedAt,
     IReadOnlyCollection<string> Tags
 );
