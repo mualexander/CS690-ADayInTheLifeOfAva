@@ -1,4 +1,5 @@
 using Spectre.Console;
+using TravelPlanner.Core.Models;
 using TravelPlanner.Core.Services;
 
 namespace TravelPlanner.Cli.Views;
@@ -24,7 +25,7 @@ public class TripView
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[grey]Action:[/]")
-                    .AddChoices("Add Stay", "Open Stay", "Delete Stay", "Update Budget", "Toggle Over-Budget Warning", "Archive Trip", "Back"));
+                    .AddChoices("Add Stay", "Open Stay", "Set Status", "Delete Stay", "Update Budget", "Toggle Over-Budget Warning", "Archive Trip", "Back"));
 
             try
             {
@@ -32,6 +33,7 @@ public class TripView
                 {
                     case "Add Stay":                   OnAddStay();                      break;
                     case "Open Stay":                  OnOpenStay();                     break;
+                    case "Set Status":                 OnSetStatus();                    break;
                     case "Delete Stay":                OnDeleteStay();                   break;
                     case "Update Budget":              OnUpdateBudget();                 break;
                     case "Toggle Over-Budget Warning": OnToggleWarnOnOverBudget();       break;
@@ -76,6 +78,7 @@ public class TripView
             .Border(TableBorder.Rounded)
             .BorderColor(Color.Grey)
             .AddColumn("[bold]Stay[/]")
+            .AddColumn("[bold]Status[/]")
             .AddColumn("[bold]Dates[/]")
             .AddColumn(new TableColumn("[bold]Expenses[/]").RightAligned())
             .AddColumn(new TableColumn("[bold]Flights[/]").RightAligned())
@@ -89,6 +92,7 @@ public class TripView
                 : "[grey](no dates)[/]";
             table.AddRow(
                 Markup.Escape(s.DisplayKey),
+                StatusMarkup(s.Status),
                 dates,
                 $"${s.ExpenseTotal:0.00}",
                 $"${s.SelectedFlightTotal:0.00}",
@@ -123,10 +127,16 @@ public class TripView
         var country = ConsoleInput.AskOrEscape("Country:");
         if (string.IsNullOrWhiteSpace(country)) return;
 
+        var status = AnsiConsole.Prompt(
+            new SelectionPrompt<StayStatus>()
+                .Title("Status:")
+                .UseConverter(s => s.ToString())
+                .AddChoices(StayStatus.Idea, StayStatus.Shortlist, StayStatus.Locked));
+
         var start = PromptDate("Start date [grey](yyyy-MM-dd, blank to skip)[/]:");
         var end   = start.HasValue ? PromptDate("End date [grey](yyyy-MM-dd)[/]:") : null;
 
-        try { _svc.AddStay(city, country, start, end); }
+        try { _svc.AddStay(city, country, start, end, status); }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
@@ -179,6 +189,27 @@ public class TripView
         try { _svc.ArchiveActiveTrip(); return true; }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); return false; }
     }
+
+    private void OnSetStatus()
+    {
+        var stay = PickStay("Select stay to set status:");
+        if (stay is null) return;
+        var status = AnsiConsole.Prompt(
+            new SelectionPrompt<StayStatus>()
+                .Title("Status:")
+                .UseConverter(s => s.ToString())
+                .AddChoices(StayStatus.Idea, StayStatus.Shortlist, StayStatus.Locked));
+        try { _svc.SetStayStatus(stay.Id, status); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+    }
+
+    private static string StatusMarkup(StayStatus status) => status switch
+    {
+        StayStatus.Idea      => "[grey]Idea[/]",
+        StayStatus.Shortlist => "[yellow]Shortlist[/]",
+        StayStatus.Locked    => "[green]Locked[/]",
+        _                    => status.ToString()
+    };
 
     private static DateTime? PromptDate(string prompt)
     {

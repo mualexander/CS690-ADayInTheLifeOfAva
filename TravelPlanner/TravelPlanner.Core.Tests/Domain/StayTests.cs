@@ -436,4 +436,25 @@ public class StayTests
 
         Assert.Equal(1000m, stay.TotalPlannedCost());
     }
+
+    [Fact]
+    public void NewStay_DefaultStatus_IsIdea()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        Assert.Equal(StayStatus.Idea, stay.Status);
+    }
+
+    [Fact]
+    public void SetStatus_UpdatesStatus()
+    {
+        var stay = new Stay(new Place("Tokyo", "Japan"));
+        stay.SetStatus(StayStatus.Shortlist);
+        Assert.Equal(StayStatus.Shortlist, stay.Status);
+
+        stay.SetStatus(StayStatus.Locked);
+        Assert.Equal(StayStatus.Locked, stay.Status);
+
+        stay.SetStatus(StayStatus.Idea);
+        Assert.Equal(StayStatus.Idea, stay.Status);
+    }
 }

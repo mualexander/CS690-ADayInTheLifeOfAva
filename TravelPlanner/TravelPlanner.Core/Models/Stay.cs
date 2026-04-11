@@ -24,6 +24,8 @@ public class Stay
     private readonly List<LodgingOption> _lodgingOptions = new();
     public IReadOnlyCollection<LodgingOption> LodgingOptions => _lodgingOptions.AsReadOnly();
 
+    public StayStatus Status { get; private set; } = StayStatus.Idea;
+
     public Stay(Place place)
     {
         Place = place ?? throw new ArgumentNullException(nameof(place));
@@ -143,6 +145,11 @@ public class Stay
     public void SetPlace(string city, string country)
     {
         Place = new Place(city, country);
+    }
+
+    public void SetStatus(StayStatus status)
+    {
+        Status = status;
     }
 
     // Expenses
@@ -278,10 +285,11 @@ public class Stay
         return TotalSelectedFlightCost() + TotalSelectedLodgingCost();
     }
 
-    internal static Stay Hydrate(Guid id, Place place, DateTime? start, DateTime? end)
+    internal static Stay Hydrate(Guid id, Place place, DateTime? start, DateTime? end, StayStatus status = StayStatus.Idea)
     {
         var stay = new Stay(place);
         stay.Id = id;
+        stay.Status = status;
 
         if (start.HasValue && end.HasValue)
             stay.SetDates(start.Value, end.Value);

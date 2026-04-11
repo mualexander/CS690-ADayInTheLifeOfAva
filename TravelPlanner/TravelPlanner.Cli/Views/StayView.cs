@@ -1,4 +1,5 @@
 using Spectre.Console;
+using TravelPlanner.Core.Models;
 using TravelPlanner.Core.Services;
 
 namespace TravelPlanner.Cli.Views;
@@ -33,7 +34,7 @@ public class StayView
                     .Title("[grey]Action:[/]")
                     .AddChoices(
                         "Expenses", "Bookmarks", "Flights", "Lodging",
-                        "Edit Place", "Set Start Date", "Set End Date",
+                        "Edit Place", "Set Start Date", "Set End Date", "Set Status",
                         "Delete Stay", "Back"));
 
             switch (choice)
@@ -45,6 +46,7 @@ public class StayView
                 case "Edit Place":     OnEditPlace();                                break;
                 case "Set Start Date": OnSetStartDate();                             break;
                 case "Set End Date":   OnSetEndDate();                               break;
+                case "Set Status":     OnSetStatus();                                break;
                 case "Delete Stay":    if (OnDeleteStay()) return;                   break;
                 case "Back":           return;
             }
@@ -63,6 +65,7 @@ public class StayView
         var grid = new Grid().AddColumn().AddColumn();
         grid.AddRow("[bold]City:[/]",    Markup.Escape(_stay.City));
         grid.AddRow("[bold]Country:[/]", Markup.Escape(_stay.Country));
+        grid.AddRow("[bold]Status:[/]",  StatusMarkup(_stay.Status));
         grid.AddRow("[bold]Dates:[/]",   dates);
         grid.AddRow("", "");
         grid.AddRow("[bold]Total:[/]",   $"[yellow]${_stay.TotalPlannedCost:0.00}[/]");
@@ -90,6 +93,25 @@ public class StayView
         AnsiConsole.Write(new Panel(grid).Border(BoxBorder.Rounded).BorderColor(Color.Grey));
         AnsiConsole.WriteLine();
     }
+
+    private void OnSetStatus()
+    {
+        var status = AnsiConsole.Prompt(
+            new SelectionPrompt<StayStatus>()
+                .Title("Status:")
+                .UseConverter(s => s.ToString())
+                .AddChoices(StayStatus.Idea, StayStatus.Shortlist, StayStatus.Locked));
+        try { _svc.SetStayStatus(_stay.Id, status); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+    }
+
+    private static string StatusMarkup(StayStatus status) => status switch
+    {
+        StayStatus.Idea      => "[grey]Idea[/]",
+        StayStatus.Shortlist => "[yellow]Shortlist[/]",
+        StayStatus.Locked    => "[green]Locked[/]",
+        _                    => status.ToString()
+    };
 
     private static string LinkMarkup(string url) =>
         string.IsNullOrWhiteSpace(url) ? "[grey](no url)[/]" : $"[link={url}]↗ Open[/]";

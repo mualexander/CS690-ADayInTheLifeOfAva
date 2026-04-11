@@ -10,4 +10,7 @@ public record StaySnapshot(
     List<BookmarkSnapshot> Bookmarks,
     List<FlightOptionSnapshot> FlightOptions,
     List<LodgingOptionSnapshot> LodgingOptions
-);
+)
+{
+    public string? Status { get; init; }
+};

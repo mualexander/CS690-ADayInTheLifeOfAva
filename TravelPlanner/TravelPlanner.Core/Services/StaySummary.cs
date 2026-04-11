@@ -1,3 +1,5 @@
+using TravelPlanner.Core.Models;
+
 namespace TravelPlanner.Core.Services;
 
 public record StaySummary(
@@ -10,5 +12,6 @@ public record StaySummary(
     decimal ExpenseTotal,
     decimal SelectedFlightTotal,
     decimal SelectedLodgingTotal,
-    decimal TotalPlannedCost
+    decimal TotalPlannedCost,
+    StayStatus Status
 );
