@@ -26,16 +26,20 @@ public class LodgingOptionsView
                     .Title("[grey]Action:[/]")
                     .AddChoices("Add", "Update Price", "Update URL", "Select", "Deselect", "Delete", "Back"));
 
-            switch (choice)
+            try
             {
-                case "Add":          OnAdd();            break;
-                case "Update Price": OnUpdatePrice();    break;
-                case "Update URL":   OnUpdateUrl();      break;
-                case "Select":       OnMarkSelected();   break;
-                case "Deselect":     OnMarkDeselected(); break;
-                case "Delete":       OnDelete();         break;
-                case "Back":         return;
+                switch (choice)
+                {
+                    case "Add":          OnAdd();            break;
+                    case "Update Price": OnUpdatePrice();    break;
+                    case "Update URL":   OnUpdateUrl();      break;
+                    case "Select":       OnMarkSelected();   break;
+                    case "Deselect":     OnMarkDeselected(); break;
+                    case "Delete":       OnDelete();         break;
+                    case "Back":         return;
+                }
             }
+            catch (OperationCanceledException) { }
         }
     }
 
@@ -99,12 +103,12 @@ public class LodgingOptionsView
     private void OnAdd()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Lodging Option[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Lodging Option[/] [grey](Esc to cancel)[/]").RuleStyle("deepskyblue1"));
         AnsiConsole.WriteLine();
 
-        var url  = AnsiConsole.Ask<string>("URL:");
+        var url  = ConsoleInput.AskOrEscape("URL:");
         if (string.IsNullOrWhiteSpace(url)) return;
-        var name = AnsiConsole.Ask<string>("Property name:");
+        var name = ConsoleInput.AskOrEscape("Property name:");
         if (string.IsNullOrWhiteSpace(name)) return;
 
         var checkIn  = PromptDate("Check-in [grey](yyyy-MM-dd)[/]:");
@@ -170,7 +174,7 @@ public class LodgingOptionsView
     {
         while (true)
         {
-            var input = AnsiConsole.Prompt(new TextPrompt<string>(prompt).AllowEmpty());
+            var input = ConsoleInput.AskOrEscape(prompt);
             if (string.IsNullOrWhiteSpace(input)) return null;
             if (DateTime.TryParse(input, out var d)) return d;
             AnsiConsole.MarkupLine("[red]Use yyyy-MM-dd format.[/]");
@@ -179,9 +183,7 @@ public class LodgingOptionsView
 
     private static decimal? PromptOptionalDecimal(string prompt, decimal? current = null)
     {
-        var tp = new TextPrompt<string>(prompt).AllowEmpty();
-        if (current.HasValue) tp = tp.DefaultValue(current.Value.ToString("0.00"));
-        var input = AnsiConsole.Prompt(tp);
+        var input = ConsoleInput.AskOrEscape(prompt, current?.ToString("0.00"));
         if (string.IsNullOrWhiteSpace(input)) return null;
         if (decimal.TryParse(input, System.Globalization.NumberStyles.Number,
                 System.Globalization.CultureInfo.InvariantCulture, out var d)) return d;

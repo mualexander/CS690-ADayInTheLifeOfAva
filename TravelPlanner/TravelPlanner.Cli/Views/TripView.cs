@@ -26,16 +26,20 @@ public class TripView
                     .Title("[grey]Action:[/]")
                     .AddChoices("Add Stay", "Open Stay", "Delete Stay", "Update Budget", "Toggle Over-Budget Warning", "Archive Trip", "Back"));
 
-            switch (choice)
+            try
             {
-                case "Add Stay":                   OnAddStay();                      break;
-                case "Open Stay":                  OnOpenStay();                     break;
-                case "Delete Stay":                OnDeleteStay();                   break;
-                case "Update Budget":              OnUpdateBudget();                 break;
-                case "Toggle Over-Budget Warning": OnToggleWarnOnOverBudget();       break;
-                case "Archive Trip":               if (OnArchive()) return;          break;
-                case "Back":                       return;
+                switch (choice)
+                {
+                    case "Add Stay":                   OnAddStay();                      break;
+                    case "Open Stay":                  OnOpenStay();                     break;
+                    case "Delete Stay":                OnDeleteStay();                   break;
+                    case "Update Budget":              OnUpdateBudget();                 break;
+                    case "Toggle Over-Budget Warning": OnToggleWarnOnOverBudget();       break;
+                    case "Archive Trip":               if (OnArchive()) return;          break;
+                    case "Back":                       return;
+                }
             }
+            catch (OperationCanceledException) { }
         }
     }
 
@@ -111,12 +115,12 @@ public class TripView
     private void OnAddStay()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Stay[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Stay[/] [grey](Esc to cancel)[/]").RuleStyle("deepskyblue1"));
         AnsiConsole.WriteLine();
 
-        var city = AnsiConsole.Ask<string>("City:");
+        var city = ConsoleInput.AskOrEscape("City:");
         if (string.IsNullOrWhiteSpace(city)) return;
-        var country = AnsiConsole.Ask<string>("Country:");
+        var country = ConsoleInput.AskOrEscape("Country:");
         if (string.IsNullOrWhiteSpace(country)) return;
 
         var start = PromptDate("Start date [grey](yyyy-MM-dd, blank to skip)[/]:");
@@ -180,7 +184,7 @@ public class TripView
     {
         while (true)
         {
-            var input = AnsiConsole.Prompt(new TextPrompt<string>(prompt).AllowEmpty());
+            var input = ConsoleInput.AskOrEscape(prompt);
             if (string.IsNullOrWhiteSpace(input)) return null;
             if (DateTime.TryParse(input, out var d)) return d;
             AnsiConsole.MarkupLine("[red]Invalid date — use yyyy-MM-dd.[/]");

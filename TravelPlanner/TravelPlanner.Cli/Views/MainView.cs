@@ -25,16 +25,21 @@ public class MainView
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[grey]Action:[/]")
-                    .AddChoices("New Trip", "Open Trip", "Delete Trip", "Seed Demo", "Quit"));
+                    .AddChoices("New Trip", "Open Trip", "Delete Trip", "Find by Tag", "Seed Demo", "Quit"));
 
-            switch (choice)
+            try
             {
-                case "New Trip":    OnNew();    break;
-                case "Open Trip":   OnOpen();   break;
-                case "Delete Trip": OnDelete(); break;
-                case "Seed Demo":   OnSeed();   break;
-                case "Quit":        return;
+                switch (choice)
+                {
+                    case "New Trip":    OnNew();       break;
+                    case "Open Trip":   OnOpen();      break;
+                    case "Delete Trip": OnDelete();    break;
+                    case "Find by Tag": OnFindByTag(); break;
+                    case "Seed Demo":   OnSeed();      break;
+                    case "Quit":        return;
+                }
             }
+            catch (OperationCanceledException) { }
         }
     }
 
@@ -79,19 +84,20 @@ public class MainView
     private void OnNew()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[bold deepskyblue1]New Trip[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]New Trip[/] [grey](Esc to cancel)[/]").RuleStyle("deepskyblue1"));
         AnsiConsole.WriteLine();
 
-        var name = AnsiConsole.Ask<string>("Trip [bold]name[/]:");
+        var name = ConsoleInput.AskOrEscape("Trip [bold]name[/]:");
         if (string.IsNullOrWhiteSpace(name)) return;
 
-        var budgetStr = AnsiConsole.Ask<string>("Budget [grey](e.g. 5000)[/]:");
-        if (!decimal.TryParse(budgetStr, System.Globalization.NumberStyles.Number,
-                System.Globalization.CultureInfo.InvariantCulture, out var budget) || budget <= 0)
+        decimal budget;
+        while (true)
         {
+            var budgetStr = ConsoleInput.AskOrEscape("Budget [grey](e.g. 5000)[/]:");
+            if (string.IsNullOrWhiteSpace(budgetStr)) return;
+            if (decimal.TryParse(budgetStr, System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture, out budget) && budget > 0) break;
             AnsiConsole.MarkupLine("[red]Invalid budget.[/]");
-            Pause();
-            return;
         }
 
         try
@@ -138,6 +144,63 @@ public class MainView
 
         try { _svc.DeleteTrip(trip.Id); }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+    }
+
+    private void OnFindByTag()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]Find by Tag[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.WriteLine();
+
+        var allTags = _svc.GetAllTagsAcrossAllTrips();
+        if (allTags.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[grey italic]No tags found across any trips.[/]");
+            Pause();
+            return;
+        }
+
+        var tag = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Select a tag:")
+                .AddChoices(allTags));
+
+        var results = _svc.FindBookmarksByTag(tag);
+        AnsiConsole.WriteLine();
+
+        if (results.Count == 0)
+        {
+            AnsiConsole.MarkupLine($"[yellow]No bookmarks found with tag [bold]#{Markup.Escape(tag)}[/].[/]");
+            Pause();
+            return;
+        }
+
+        AnsiConsole.MarkupLine($"  Bookmarks tagged [deepskyblue1]#{Markup.Escape(tag)}[/]:");
+        AnsiConsole.WriteLine();
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .BorderColor(Color.Grey)
+            .AddColumn("[bold]Trip[/]")
+            .AddColumn("[bold]Stay[/]")
+            .AddColumn("[bold]Title[/]")
+            .AddColumn("[bold]URL[/]")
+            .AddColumn("[bold]Tags[/]");
+
+        foreach (var r in results)
+        {
+            var tagsDisplay = string.Join(" ", r.Tags.Select(t => $"[deepskyblue1]#{Markup.Escape(t)}[/]"));
+            table.AddRow(
+                Markup.Escape(r.TripName),
+                Markup.Escape(r.StayDisplayKey),
+                Markup.Escape(r.Title),
+                $"[link={r.Url}]{Markup.Escape(r.Url)}[/]",
+                tagsDisplay);
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        Pause();
     }
 
     private void OnSeed()

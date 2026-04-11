@@ -51,21 +51,31 @@
             "Title": "Ding Dong Lounge",
             "Url": "https://www.dingdongloungenz.com/",
             "Notes": "Late night rock/metal bar that will be done up for Halloween",
-            "CreatedAt": "2026-03-24T15:17:58.8930499Z"
+            "CreatedAt": "2026-03-24T15:17:58.8930499Z",
+            "Tags": [
+              "cocktails",
+              "nightlife"
+            ]
           },
           {
             "Id": "5f01d4ad-7db0-4241-a427-b5536445d62b",
             "Title": "Sky Tower",
             "Url": "https://skycityauckland.co.nz/sky-tower/",
             "Notes": "Tallest structure in the Southern Hemisphere",
-            "CreatedAt": "2026-03-24T15:19:17.2999005Z"
+            "CreatedAt": "2026-03-24T15:19:17.2999005Z",
+            "Tags": [
+              "landmarks"
+            ]
           },
           {
             "Id": "6e571916-a32f-4f01-8406-44235899a609",
             "Title": "Auckland Marathon",
             "Url": "https://aucklandmarathon.co.nz/",
             "Notes": "Registration complete!",
-            "CreatedAt": "2026-03-24T20:49:48.0992611Z"
+            "CreatedAt": "2026-03-24T20:49:48.0992611Z",
+            "Tags": [
+              "exercise"
+            ]
           }
         ],
         "FlightOptions": [
@@ -130,14 +140,20 @@
             "Title": "Wai-O-Tapu Thermal Wonderland",
             "Url": "https://www.waiotapu.co.nz/plan-your-visit/",
             "Notes": "Arrive by 9:45am for Lady Knox geyser",
-            "CreatedAt": "2026-03-24T17:39:42.2476511Z"
+            "CreatedAt": "2026-03-24T17:39:42.2476511Z",
+            "Tags": [
+              "relaxation"
+            ]
           },
           {
             "Id": "6fa5a277-f680-4112-97d3-a654d061989a",
             "Title": "Hobbiton",
             "Url": "https://www.hobbitontours.com/",
             "Notes": "Lord of the Rings!!!",
-            "CreatedAt": "2026-03-24T17:39:56.8465133Z"
+            "CreatedAt": "2026-03-24T17:39:56.8465133Z",
+            "Tags": [
+              "landmarks"
+            ]
           }
         ],
         "FlightOptions": [],
@@ -177,14 +193,22 @@
             "Title": "Hell\u0027s Gate",
             "Url": "https://www.hellsgate.co.nz/",
             "Notes": "Thermal mud baths",
-            "CreatedAt": "2026-03-24T18:01:17.6082896Z"
+            "CreatedAt": "2026-03-24T18:01:17.6082896Z",
+            "Tags": [
+              "exercise",
+              "relaxation"
+            ]
           },
           {
             "Id": "62c453a9-7b22-47e7-a012-e5be7670b107",
             "Title": "Tongariro National Park",
             "Url": "https://www.nationalpark.co.nz/",
             "Notes": "Hiking and sightseeing",
-            "CreatedAt": "2026-03-24T18:02:21.0566345Z"
+            "CreatedAt": "2026-03-24T18:02:21.0566345Z",
+            "Tags": [
+              "exercise",
+              "landmarks"
+            ]
           }
         ],
         "FlightOptions": [],
@@ -240,21 +264,43 @@
             "Title": "Zealandia",
             "Url": "https://www.visitzealandia.com/",
             "Notes": "Huge animal sanctuary",
-            "CreatedAt": "2026-03-24T18:29:54.8433012Z"
+            "CreatedAt": "2026-03-24T18:29:54.8433012Z",
+            "Tags": [
+              "animals"
+            ]
           },
           {
             "Id": "a5aa61ae-94b0-4075-b6ff-69f68bb91a64",
             "Title": "Te Papa National Museum",
             "Url": "https://www.tepapa.govt.nz/",
             "Notes": "One of TripAdvisor\u0027s top NZ tourist attractions",
-            "CreatedAt": "2026-03-24T18:30:08.3004952Z"
+            "CreatedAt": "2026-03-24T18:30:08.3004952Z",
+            "Tags": [
+              "landmarks",
+              "museum"
+            ]
           },
           {
             "Id": "1af4f621-b3d5-45b8-9360-c4b772113aa7",
             "Title": "Club K",
             "Url": "https://www.instagram.com/explore/locations/11502808/club-k/",
             "Notes": "Dancing and karaoke",
-            "CreatedAt": "2026-03-24T18:30:21.526636Z"
+            "CreatedAt": "2026-03-24T18:30:21.526636Z",
+            "Tags": [
+              "cocktails",
+              "nightlife"
+            ]
+          },
+          {
+            "Id": "bb798423-7dbc-4167-832f-f27e8c78dd2b",
+            "Title": "S\u0026M\u0027s Cocktail \u0026 Lounge Bar",
+            "Url": "https://www.scottyandmals.co.nz/",
+            "Notes": "Dancing and cocktails",
+            "CreatedAt": "2026-04-01T19:21:43.9955588Z",
+            "Tags": [
+              "cocktails",
+              "nightlife"
+            ]
           }
         ],
         "FlightOptions": [],
@@ -294,21 +340,24 @@
             "Title": "Interislander Ferry",
             "Url": "https://www.interislander.co.nz",
             "Notes": "Primary ferry to cross the Cook Straight",
-            "CreatedAt": "2026-03-24T19:39:37.0814987Z"
+            "CreatedAt": "2026-03-24T19:39:37.0814987Z",
+            "Tags": []
           },
           {
             "Id": "40c9f65c-9b92-4d78-81db-afc9be28c0f0",
             "Title": "Bluebridge Ferry",
             "Url": "https://www.bluebridge.co.nz/",
             "Notes": "Alternative ferry across the Cook Straight",
-            "CreatedAt": "2026-03-24T19:39:58.0758396Z"
+            "CreatedAt": "2026-03-24T19:39:58.0758396Z",
+            "Tags": []
           },
           {
             "Id": "e9103377-8154-475d-8738-bdaff3a04db1",
             "Title": "Pancake rocks and blowholes",
             "Url": "https://maps.app.goo.gl/beoRVbRS51DhwVjy8",
             "Notes": "Also near the Punakaiki cavern",
-            "CreatedAt": "2026-03-24T19:40:16.7371395Z"
+            "CreatedAt": "2026-03-24T19:40:16.7371395Z",
+            "Tags": []
           }
         ],
         "FlightOptions": [],
@@ -356,7 +405,8 @@
             "Title": "Snakebite Brewery",
             "Url": "https://www.snakebite.co.nz/",
             "Notes": "Should have vegetarian options",
-            "CreatedAt": "2026-03-24T20:44:40.6327975Z"
+            "CreatedAt": "2026-03-24T20:44:40.6327975Z",
+            "Tags": []
           }
         ],
         "FlightOptions": [],
@@ -423,28 +473,32 @@
             "Title": "Birdy",
             "Url": "https://www.birdyqt.co.nz/",
             "Notes": "Cocktails and karaoke",
-            "CreatedAt": "2026-03-24T21:46:23.7461827Z"
+            "CreatedAt": "2026-03-24T21:46:23.7461827Z",
+            "Tags": []
           },
           {
             "Id": "328b4604-fcd0-4b4d-9a2a-9b5cde6dcebb",
             "Title": "Little Blackwood",
             "Url": "https://littleblackwood.com/",
             "Notes": "Queensland\u0027s best cocktail bar",
-            "CreatedAt": "2026-03-24T21:46:43.4319945Z"
+            "CreatedAt": "2026-03-24T21:46:43.4319945Z",
+            "Tags": []
           },
           {
             "Id": "d88775d9-5ebd-4527-ad65-9ac313bc94e9",
             "Title": "Ziptrek Ecotours",
             "Url": "https://ziptrek.com/",
             "Notes": "Ziplines",
-            "CreatedAt": "2026-03-24T21:46:57.4859407Z"
+            "CreatedAt": "2026-03-24T21:46:57.4859407Z",
+            "Tags": []
           },
           {
             "Id": "f87414a3-3dbd-474a-a807-1baf2a9ad6bc",
             "Title": "Canyon Explorers",
             "Url": "https://www.canyonexplorers.nz/",
             "Notes": "Half day adventures of rivers and waterfalls",
-            "CreatedAt": "2026-03-24T21:47:13.3128962Z"
+            "CreatedAt": "2026-03-24T21:47:13.3128962Z",
+            "Tags": []
           }
         ],
         "FlightOptions": [],
@@ -532,7 +586,8 @@
             "Title": "Vegan Ramen",
             "Url": "https://www.itravelforveganfood.com/articles/where-to-find-the-best-vegan-ramen-in-japan",
             "Notes": "Covers Tokyo and Osaka",
-            "CreatedAt": "2026-03-25T04:05:36.7979171Z"
+            "CreatedAt": "2026-03-25T04:05:36.7979171Z",
+            "Tags": []
           }
         ],
         "FlightOptions": [],

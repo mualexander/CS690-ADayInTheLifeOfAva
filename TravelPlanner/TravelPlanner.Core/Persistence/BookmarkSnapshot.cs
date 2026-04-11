@@ -6,4 +6,7 @@ public record BookmarkSnapshot(
     string Url,
     string? Notes,
     DateTime CreatedAt
-);
+)
+{
+    public List<string>? Tags { get; init; }
+};

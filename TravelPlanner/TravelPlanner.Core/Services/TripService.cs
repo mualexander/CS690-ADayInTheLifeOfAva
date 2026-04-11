@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TravelPlanner.Core.Interfaces;
 using TravelPlanner.Core.Models;
@@ -283,12 +284,15 @@ public class TripService
 
 
     // Bookmarks
-    public void AddBookmarkToStay(Guid stayId, string title, string url, string? notes = null)
+    public void AddBookmarkToStay(Guid stayId, string title, string url, string? notes = null, IEnumerable<string>? tags = null)
     {
         var trip = GetActiveTrip();
         var stay = GetStay(stayId);
 
-        stay.AddBookmark(title, url, notes);
+        var bookmark = stay.AddBookmark(title, url, notes);
+        if (tags != null)
+            foreach (var tag in tags)
+                bookmark.AddTag(tag);
 
         _repository.Update(trip);
     }
@@ -305,8 +309,69 @@ public class TripService
                 b.Title,
                 b.Url,
                 b.Notes,
-                b.CreatedAt
+                b.CreatedAt,
+                b.Tags
             ))
+            .ToList();
+    }
+
+    public void AddTagToBookmark(Guid stayId, Guid bookmarkId, string tag)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+        stay.GetBookmark(bookmarkId).AddTag(tag);
+        _repository.Update(trip);
+    }
+
+    public void RemoveTagFromBookmark(Guid stayId, Guid bookmarkId, string tag)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+        stay.GetBookmark(bookmarkId).RemoveTag(tag);
+        _repository.Update(trip);
+    }
+
+    public IReadOnlyCollection<string> GetAllTagsForActiveTrip()
+    {
+        var trip = GetActiveTrip();
+        return trip.Stays
+            .SelectMany(s => s.Bookmarks)
+            .SelectMany(b => b.Tags)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(t => t)
+            .ToList();
+    }
+
+    public IReadOnlyCollection<string> GetAllTagsAcrossAllTrips()
+    {
+        return _repository.GetAll()
+            .Where(t => !t.IsArchived)
+            .SelectMany(t => t.Stays)
+            .SelectMany(s => s.Bookmarks)
+            .SelectMany(b => b.Tags)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(t => t)
+            .ToList();
+    }
+
+    public IReadOnlyList<TagSearchResultSummary> FindBookmarksByTag(string tag)
+    {
+        var normalized = tag.Trim().ToLowerInvariant();
+        return _repository.GetAll()
+            .Where(t => !t.IsArchived)
+            .SelectMany(t => t.Stays.Select(s => (Trip: t, Stay: s)))
+            .SelectMany(ts => ts.Stay.Bookmarks
+                .Where(b => b.Tags.Contains(normalized, StringComparer.OrdinalIgnoreCase))
+                .Select(b => new TagSearchResultSummary(
+                    ts.Trip.Name,
+                    ts.Stay.DisplayKey,
+                    b.Title,
+                    b.Url,
+                    b.Notes,
+                    b.Tags)))
+            .OrderBy(r => r.TripName)
+            .ThenBy(r => r.StayDisplayKey)
+            .ThenBy(r => r.Title)
             .ToList();
     }
 

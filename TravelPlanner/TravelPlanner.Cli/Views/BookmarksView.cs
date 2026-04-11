@@ -24,17 +24,22 @@ public class BookmarksView
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[grey]Action:[/]")
-                    .AddChoices("Add", "Rename", "Update URL", "Update Notes", "Delete", "Back"));
+                    .AddChoices("Add", "Rename", "Update URL", "Update Notes", "Manage Tags", "Delete", "Back"));
 
-            switch (choice)
+            try
             {
-                case "Add":          OnAdd();         break;
-                case "Rename":       OnRename();      break;
-                case "Update URL":   OnUpdateUrl();   break;
-                case "Update Notes": OnUpdateNotes(); break;
-                case "Delete":       OnDelete();      break;
-                case "Back":         return;
+                switch (choice)
+                {
+                    case "Add":          OnAdd();         break;
+                    case "Rename":       OnRename();      break;
+                    case "Update URL":   OnUpdateUrl();   break;
+                    case "Update Notes": OnUpdateNotes(); break;
+                    case "Manage Tags":  OnManageTags();  break;
+                    case "Delete":       OnDelete();      break;
+                    case "Back":         return;
+                }
             }
+            catch (OperationCanceledException) { }
         }
     }
 
@@ -58,13 +63,20 @@ public class BookmarksView
             .BorderColor(Color.Grey)
             .AddColumn("[bold]Title[/]")
             .AddColumn("[bold]URL[/]")
-            .AddColumn("[bold]Notes[/]");
+            .AddColumn("[bold]Notes[/]")
+            .AddColumn("[bold]Tags[/]");
 
         foreach (var b in bookmarks)
+        {
+            var tagsDisplay = b.Tags.Count > 0
+                ? string.Join(" ", b.Tags.Select(t => $"[deepskyblue1]#{Markup.Escape(t)}[/]"))
+                : "[grey](none)[/]";
             table.AddRow(
                 Markup.Escape(b.Title),
                 $"[link={b.Url}]{Markup.Escape(b.Url)}[/]",
-                Markup.Escape(b.Notes ?? ""));
+                Markup.Escape(b.Notes ?? ""),
+                tagsDisplay);
+        }
 
         AnsiConsole.Write(table);
         AnsiConsole.WriteLine();
@@ -84,20 +96,22 @@ public class BookmarksView
     private void OnAdd()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Bookmark[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Bookmark[/] [grey](Esc to cancel)[/]").RuleStyle("deepskyblue1"));
         AnsiConsole.WriteLine();
 
-        var title = AnsiConsole.Ask<string>("Title:");
+        var title = ConsoleInput.AskOrEscape("Title:");
         if (string.IsNullOrWhiteSpace(title)) return;
-        var url = AnsiConsole.Ask<string>("URL:");
+        var url = ConsoleInput.AskOrEscape("URL:");
         if (string.IsNullOrWhiteSpace(url)) return;
-        var notes = AnsiConsole.Prompt(
-            new TextPrompt<string>("Notes [grey](optional)[/]:").AllowEmpty());
+        var notes = ConsoleInput.AskOrEscape("Notes [grey](optional)[/]:");
+
+        var tags = PromptTags(_svc.GetAllTagsForActiveTrip(), []);
 
         try
         {
             _svc.AddBookmarkToStay(_stay.Id, title, url,
-                string.IsNullOrWhiteSpace(notes) ? null : notes);
+                string.IsNullOrWhiteSpace(notes) ? null : notes,
+                tags.Count > 0 ? tags : null);
         }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
@@ -134,6 +148,70 @@ public class BookmarksView
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
+    private void OnManageTags()
+    {
+        var b = PickBookmark("Select bookmark to manage tags:");
+        if (b is null) return;
+
+        while (true)
+        {
+            AnsiConsole.Clear();
+            AnsiConsole.Write(new Rule($"[bold deepskyblue1]Tags — {Markup.Escape(b.Title)}[/]").RuleStyle("deepskyblue1"));
+            AnsiConsole.WriteLine();
+
+            // Refresh to pick up changes from previous iteration
+            b = GetBookmarks().FirstOrDefault(x => x.Id == b.Id);
+            if (b is null) return;
+
+            var currentTags = b.Tags.Count > 0
+                ? string.Join(" ", b.Tags.Select(t => $"[deepskyblue1]#{Markup.Escape(t)}[/]"))
+                : "[grey](none)[/]";
+            AnsiConsole.MarkupLine($"  Current tags: {currentTags}");
+            AnsiConsole.WriteLine();
+
+            var action = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[grey]Action:[/]")
+                    .AddChoices("Add Tags", "Remove Tags", "Back"));
+
+            if (action == "Back") return;
+
+            if (action == "Add Tags")
+            {
+                var suggestions = _svc.GetAllTagsForActiveTrip()
+                    .Except(b.Tags, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                var toAdd = PromptTags(suggestions, b.Tags);
+                foreach (var tag in toAdd)
+                {
+                    try { _svc.AddTagToBookmark(_stay.Id, b.Id, tag); }
+                    catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+                }
+            }
+            else // Remove Tags
+            {
+                if (b.Tags.Count == 0)
+                {
+                    AnsiConsole.MarkupLine("[yellow]No tags to remove.[/]");
+                    Pause();
+                    continue;
+                }
+
+                var toRemove = AnsiConsole.Prompt(
+                    new MultiSelectionPrompt<string>()
+                        .Title("Select tags to remove [grey](space to toggle, enter to confirm)[/]:")
+                        .NotRequired()
+                        .AddChoices(b.Tags));
+
+                foreach (var tag in toRemove)
+                {
+                    try { _svc.RemoveTagFromBookmark(_stay.Id, b.Id, tag); }
+                    catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+                }
+            }
+        }
+    }
+
     private void OnDelete()
     {
         var b = PickBookmark("Select bookmark to delete:");
@@ -141,6 +219,43 @@ public class BookmarksView
         if (!AnsiConsole.Confirm($"Delete [bold]{Markup.Escape(b.Title)}[/]?")) return;
         try { _svc.DeleteBookmark(_stay.Id, b.Id); }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+    }
+
+    /// <summary>
+    /// Prompts the user to select from existing tag suggestions and/or type new tags.
+    /// Returns the combined list of selected/entered tags (already normalized).
+    /// </summary>
+    /// <param name="suggestions">Tags to offer as pre-existing choices.</param>
+    /// <param name="exclude">Tags to exclude from suggestions (already on the bookmark).</param>
+    private static List<string> PromptTags(IEnumerable<string> suggestions, IEnumerable<string> exclude)
+    {
+        var selected = new List<string>();
+        var choices = suggestions
+            .Except(exclude, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(t => t)
+            .ToList();
+
+        if (choices.Count > 0)
+        {
+            var picks = AnsiConsole.Prompt(
+                new MultiSelectionPrompt<string>()
+                    .Title("Select existing tags [grey](space to toggle, enter to confirm)[/]:")
+                    .NotRequired()
+                    .AddChoices(choices));
+            selected.AddRange(picks);
+        }
+
+        while (true)
+        {
+            var input = AnsiConsole.Prompt(
+                new TextPrompt<string>("New tag [grey](blank to finish)[/]:").AllowEmpty());
+            if (string.IsNullOrWhiteSpace(input)) break;
+            var normalized = input.Trim().ToLowerInvariant();
+            if (!selected.Contains(normalized, StringComparer.OrdinalIgnoreCase))
+                selected.Add(normalized);
+        }
+
+        return selected;
     }
 
     private static void Pause()

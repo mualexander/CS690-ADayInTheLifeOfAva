@@ -50,7 +50,7 @@ public static class SnapshotMapper
             bookmark.Url,
             bookmark.Notes,
             bookmark.CreatedAt
-        );
+        ) { Tags = bookmark.Tags.ToList() };
     }
 
     private static FlightOptionSnapshot ToSnapshot(FlightOption option)
@@ -117,7 +117,8 @@ public static class SnapshotMapper
                     bookmarkSnap.Title,
                     bookmarkSnap.Url,
                     bookmarkSnap.Notes,
-                    bookmarkSnap.CreatedAt
+                    bookmarkSnap.CreatedAt,
+                    bookmarkSnap.Tags
                 );
 
                 stay.HydrateAddBookmark(bookmark);
