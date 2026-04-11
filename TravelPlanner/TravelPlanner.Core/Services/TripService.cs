@@ -123,6 +123,29 @@ public class TripService
         return items.OrderByDescending(i => i.Price).Take(count).ToList();
     }
 
+    public IReadOnlyList<BudgetExportRow> GetBudgetExportRows()
+    {
+        var trip = GetActiveTrip();
+        var rows = new List<BudgetExportRow>();
+
+        foreach (var stay in trip.Stays)
+        {
+            var status = stay.Status.ToString();
+            var displayKey = stay.DisplayKey;
+
+            foreach (var e in stay.Expenses)
+                rows.Add(new BudgetExportRow(status, displayKey, "Expense", e.Name, e.Amount));
+
+            foreach (var f in stay.FlightOptions.Where(f => f.IsSelected))
+                rows.Add(new BudgetExportRow(status, displayKey, "Flight", $"{f.FromAirportCode} -> {f.ToAirportCode}", f.Price));
+
+            foreach (var l in stay.LodgingOptions.Where(l => l.IsSelected))
+                rows.Add(new BudgetExportRow(status, displayKey, "Lodging", l.PropertyName, l.Price));
+        }
+
+        return rows;
+    }
+
     public bool GetWarnOnOverBudget()
     {
         return GetActiveTrip().WarnOnOverBudget;
