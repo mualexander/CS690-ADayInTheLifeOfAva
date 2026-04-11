@@ -66,7 +66,8 @@ public class FlightOptionsView
             .AddColumn("[bold]Arrive[/]")
             .AddColumn(new TableColumn("[bold]Price[/]").RightAligned())
             .AddColumn("[bold]Link[/]")
-            .AddColumn("[bold] [/]");
+            .AddColumn("[bold] [/]")
+            .AddColumn("[bold]Checked At[/]");
 
         foreach (var f in options)
         {
@@ -78,7 +79,8 @@ public class FlightOptionsView
                 f.ArriveTime.ToString("yyyy-MM-dd HH:mm"),
                 price,
                 LinkMarkup(f.Url),
-                sel
+                sel,
+                f.LastCheckedAt?.ToString("yyyy-MM-dd HH:mm") ?? ""
             );
         }
 
