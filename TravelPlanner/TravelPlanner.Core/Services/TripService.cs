@@ -31,12 +31,13 @@ public class TripService
 
     public void SelectTrip(Guid tripId) => _context.SetActiveTrip(tripId);
 
-    public void AddStay(string city, string country, DateTime? start = null, DateTime? end = null)
+    public void AddStay(string city, string country, DateTime? start = null, DateTime? end = null, StayStatus status = StayStatus.Idea)
     {
         var trip = GetActiveTrip();
 
         var place = new Place(city, country);
-        trip.AddStay(place, start, end);
+        var stay = trip.AddStay(place, start, end);
+        stay.SetStatus(status);
 
         _repository.Update(trip);
     }
@@ -56,7 +57,8 @@ public class TripService
                 s.TotalExpenses(),
                 s.TotalSelectedFlightCost(),
                 s.TotalSelectedLodgingCost(),
-                s.TotalPlannedCost()
+                s.TotalPlannedCost(),
+                s.Status
             ))
             .ToList();
     }
@@ -184,6 +186,16 @@ public class TripService
         var trip = GetActiveTrip();
 
         trip.RemoveStay(stayId);
+
+        _repository.Update(trip);
+    }
+
+    public void SetStayStatus(Guid stayId, StayStatus status)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        stay.SetStatus(status);
 
         _repository.Update(trip);
     }

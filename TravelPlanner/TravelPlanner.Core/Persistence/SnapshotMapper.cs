@@ -27,7 +27,7 @@ public static class SnapshotMapper
             stay.Bookmarks.Select(ToSnapshot).ToList(),
             stay.FlightOptions.Select(ToSnapshot).ToList(),
             stay.LodgingOptions.Select(ToSnapshot).ToList()
-        );
+        ) { Status = stay.Status.ToString() };
     }
 
     private static ExpenseSnapshot ToSnapshot(Expense expense)
@@ -92,7 +92,10 @@ public static class SnapshotMapper
         foreach (var staySnap in snap.Stays)
         {
             var place = Place.Hydrate(Guid.NewGuid(), staySnap.City, staySnap.Country);
-            var stay = Stay.Hydrate(staySnap.Id, place, staySnap.StartDate, staySnap.EndDate);
+            var stayStatus = Enum.TryParse<StayStatus>(staySnap.Status, ignoreCase: true, out var parsedStatus)
+                ? parsedStatus
+                : StayStatus.Idea;
+            var stay = Stay.Hydrate(staySnap.Id, place, staySnap.StartDate, staySnap.EndDate, stayStatus);
 
             foreach (var expSnap in staySnap.Expenses ?? new List<ExpenseSnapshot>())
             {

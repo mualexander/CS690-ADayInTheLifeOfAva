@@ -1165,6 +1165,69 @@ public class TripServiceTests
 
     #endregion
 
+    #region StayStatus Tests
+
+    [Fact]
+    public void AddStay_DefaultStatus_IsIdea()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan");
+
+        Assert.Equal(StayStatus.Idea, svc.GetStays().Single().Status);
+    }
+
+    [Fact]
+    public void AddStay_WithExplicitStatus_PersistsStatus()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan", status: StayStatus.Shortlist);
+
+        Assert.Equal(StayStatus.Shortlist, svc.GetStays().Single().Status);
+    }
+
+    [Fact]
+    public void SetStayStatus_UpdatesStatus()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.SetStayStatus(stayId, StayStatus.Locked);
+
+        Assert.Equal(StayStatus.Locked, svc.GetStays().Single().Status);
+    }
+
+    [Fact]
+    public void SetStayStatus_ThrowsForUnknownStay()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            svc.SetStayStatus(Guid.NewGuid(), StayStatus.Locked));
+    }
+
+    #endregion
+
     #region IsOverBudget After Price Update Tests
 
     [Fact]
