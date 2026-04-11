@@ -66,8 +66,8 @@ public class LodgingOptionsView
             .AddColumn("[bold]Check-out[/]")
             .AddColumn(new TableColumn("[bold]Price[/]").RightAligned())
             .AddColumn("[bold]Link[/]")
-            .AddColumn("[bold] [/]");
-
+            .AddColumn("[bold] [/]")
+            .AddColumn("[bold]Checked At[/]");
         foreach (var l in options)
         {
             var price = l.Price.HasValue ? $"[yellow]${l.Price.Value:0.00}[/]" : "[grey]?[/]";
@@ -78,7 +78,8 @@ public class LodgingOptionsView
                 l.CheckOutDate.ToString("yyyy-MM-dd"),
                 price,
                 LinkMarkup(l.Url),
-                sel
+                sel,
+                l.LastCheckedAt?.ToString("yyyy-MM-dd HH:mm") ?? ""
             );
         }
 
