@@ -25,7 +25,7 @@ public class TripView
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[grey]Action:[/]")
-                    .AddChoices("Add Stay", "Open Stay", "Set Status", "Delete Stay", "Update Budget", "Toggle Over-Budget Warning", "Export Budget Summary", "Archive Trip", "Back"));
+                    .AddChoices("Add Stay", "Open Stay", "Set Status", "Delete Stay", "Update Budget", "Toggle Over-Budget Warning", "Edit Settings", "Export Budget Summary", "Archive Trip", "Back"));
 
             try
             {
@@ -37,6 +37,7 @@ public class TripView
                     case "Delete Stay":                OnDeleteStay();                   break;
                     case "Update Budget":              OnUpdateBudget();                 break;
                     case "Toggle Over-Budget Warning": OnToggleWarnOnOverBudget();       break;
+                    case "Edit Settings":              OnEditSettings();                 break;
                     case "Export Budget Summary":      OnExportBudgetSummary();          break;
                     case "Archive Trip":               if (OnArchive()) return;          break;
                     case "Back":                       return;
@@ -54,14 +55,18 @@ public class TripView
 
         if (trip is not null)
         {
-            var remainColor = trip.RemainingBudget() >= 0 ? "green" : "red";
-            var warnStatus = trip.TotalBudget > 0
+            var remainColor  = trip.RemainingBudget() >= 0 ? "green" : "red";
+            var warnStatus   = trip.TotalBudget > 0
                 ? (trip.WarnOnOverBudget ? "  [grey]Warnings: On[/]" : "  [grey]Warnings: Off[/]")
+                : "";
+            var costPerPerson = trip.TravelerCount.HasValue && trip.TravelerCount.Value > 0
+                ? $"   Cost/person: ${trip.TotalPlannedCost() / trip.TravelerCount.Value:0.00}"
                 : "";
             AnsiConsole.MarkupLine(
                 $"  Budget: [yellow]${trip.TotalBudget:0.00}[/]   " +
-                $"Cost: ${trip.TotalPlannedCost():0.00}   " +
-                $"Remaining: [{remainColor}]${trip.RemainingBudget():0.00}[/]" +
+                $"Cost: ${trip.TotalPlannedCost():0.00}" +
+                costPerPerson +
+                $"   Remaining: [{remainColor}]${trip.RemainingBudget():0.00}[/]" +
                 warnStatus);
         }
 
@@ -189,6 +194,47 @@ public class TripView
         if (!AnsiConsole.Confirm("Archive this trip? It will be hidden from the trips list.")) return false;
         try { _svc.ArchiveActiveTrip(); return true; }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); return false; }
+    }
+
+    private void OnEditSettings()
+    {
+        var trip = _ctx.ActiveTrip;
+        if (trip is null) return;
+
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]Trip Settings[/] [grey](Esc to cancel)[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.WriteLine();
+
+        var homeAirport = ConsoleInput.AskOrEscape(
+            "Home airport code [grey](blank to clear)[/]:",
+            trip.HomeAirportCode ?? "");
+        if (homeAirport == null) return;
+
+        var currency = ConsoleInput.AskOrEscape(
+            "Default currency [grey](e.g. USD)[/]:",
+            trip.DefaultCurrency);
+        if (string.IsNullOrWhiteSpace(currency)) return;
+
+        var travelerStr = ConsoleInput.AskOrEscape(
+            "Traveler count [grey](blank to clear)[/]:",
+            trip.TravelerCount?.ToString() ?? "");
+        if (travelerStr == null) return;
+
+        int? travelerCount = null;
+        if (!string.IsNullOrWhiteSpace(travelerStr))
+        {
+            if (!int.TryParse(travelerStr, out var tc) || tc < 1)
+            { AnsiConsole.MarkupLine("[red]Traveler count must be a positive whole number.[/]"); Pause(); return; }
+            travelerCount = tc;
+        }
+
+        try
+        {
+            _svc.SetTripHomeAirportCode(string.IsNullOrWhiteSpace(homeAirport) ? null : homeAirport);
+            _svc.SetTripDefaultCurrency(currency);
+            _svc.SetTripTravelerCount(travelerCount);
+        }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
     private void OnSetStatus()

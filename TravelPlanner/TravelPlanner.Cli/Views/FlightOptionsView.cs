@@ -115,11 +115,13 @@ public class FlightOptionsView
         AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Flight Option[/] [grey](Esc to cancel)[/]").RuleStyle("deepskyblue1"));
         AnsiConsole.WriteLine();
 
+        var homeAirport = _svc.GetTripHomeAirportCode();
+
         var url  = ConsoleInput.AskOrEscape("URL:");
         if (string.IsNullOrWhiteSpace(url)) return;
-        var from = ConsoleInput.AskOrEscape("From airport [grey](e.g. JFK)[/]:");
+        var from = ConsoleInput.AskOrEscape("From airport [grey](e.g. JFK)[/]:", homeAirport);
         if (string.IsNullOrWhiteSpace(from)) return;
-        var to   = ConsoleInput.AskOrEscape("To airport [grey](e.g. NRT)[/]:");
+        var to   = ConsoleInput.AskOrEscape("To airport [grey](e.g. NRT)[/]:", homeAirport);
         if (string.IsNullOrWhiteSpace(to)) return;
 
         var depart = PromptDateTime("Depart [grey](yyyy-MM-dd HH:mm)[/]:");
