@@ -10,4 +10,8 @@ public record LodgingOptionSnapshot(
     string PropertyName,
     DateTime CheckInDate,
     DateTime CheckOutDate
-);
+)
+{
+    public decimal? Rating { get; init; }
+    public string? Neighborhood { get; init; }
+};

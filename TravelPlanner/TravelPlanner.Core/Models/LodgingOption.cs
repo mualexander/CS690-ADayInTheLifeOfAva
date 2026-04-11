@@ -5,6 +5,8 @@ public class LodgingOption : TravelOption
     public string PropertyName { get; private set; }
     public DateTime CheckInDate { get; private set; }
     public DateTime CheckOutDate { get; private set; }
+    public decimal? Rating { get; private set; }
+    public string? Neighborhood { get; private set; }
 
     public LodgingOption(
         string url,
@@ -36,6 +38,19 @@ public class LodgingOption : TravelOption
         PropertyName = newPropertyName.Trim();
     }
 
+    public void UpdateRating(decimal? rating)
+    {
+        if (rating.HasValue && (rating.Value < 0 || rating.Value > 5))
+            throw new ArgumentException("Rating must be between 0 and 5.0.", nameof(rating));
+
+        Rating = rating;
+    }
+
+    public void UpdateNeighborhood(string? neighborhood)
+    {
+        Neighborhood = string.IsNullOrWhiteSpace(neighborhood) ? null : neighborhood.Trim();
+    }
+
     public void UpdateDates(DateTime checkInDate, DateTime checkOutDate)
     {
         checkInDate = checkInDate.Date;
@@ -57,7 +72,9 @@ public class LodgingOption : TravelOption
         bool isSelected,
         string propertyName,
         DateTime checkInDate,
-        DateTime checkOutDate)
+        DateTime checkOutDate,
+        decimal? rating = null,
+        string? neighborhood = null)
     {
         var option = new LodgingOption(
             url,
@@ -67,7 +84,9 @@ public class LodgingOption : TravelOption
             price)
         {
             Id = id,
-            CreatedAt = createdAt
+            CreatedAt = createdAt,
+            Rating = rating,
+            Neighborhood = string.IsNullOrWhiteSpace(neighborhood) ? null : neighborhood.Trim()
         };
 
         if (lastCheckedAt.HasValue)

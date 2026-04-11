@@ -81,7 +81,7 @@ public static class SnapshotMapper
             option.PropertyName,
             option.CheckInDate,
             option.CheckOutDate
-        );
+        ) { Rating = option.Rating, Neighborhood = option.Neighborhood };
     }
 
     public static Trip FromSnapshot(TripSnapshot snap)
@@ -156,7 +156,9 @@ public static class SnapshotMapper
                     lodgingSnap.IsSelected,
                     lodgingSnap.PropertyName,
                     lodgingSnap.CheckInDate,
-                    lodgingSnap.CheckOutDate
+                    lodgingSnap.CheckOutDate,
+                    lodgingSnap.Rating,
+                    lodgingSnap.Neighborhood
                 );
 
                 stay.HydrateAddLodgingOption(lodging);

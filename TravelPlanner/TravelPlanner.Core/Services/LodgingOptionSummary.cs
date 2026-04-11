@@ -9,5 +9,7 @@ public record LodgingOptionSummary(
     bool IsSelected,
     string PropertyName,
     DateTime CheckInDate,
-    DateTime CheckOutDate
+    DateTime CheckOutDate,
+    decimal? Rating,
+    string? Neighborhood
 );

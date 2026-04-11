@@ -509,7 +509,9 @@ public class TripService
         string propertyName,
         DateTime checkInDate,
         DateTime checkOutDate,
-        decimal? price = null)
+        decimal? price = null,
+        decimal? rating = null,
+        string? neighborhood = null)
     {
         var trip = _context.ActiveTrip
             ?? throw new InvalidOperationException("No active trip.");
@@ -517,7 +519,9 @@ public class TripService
         var stay = trip.Stays.FirstOrDefault(s => s.Id == stayId)
             ?? throw new InvalidOperationException("Stay not found.");
 
-        stay.AddLodgingOption(url, propertyName, checkInDate, checkOutDate, price);
+        var option = stay.AddLodgingOption(url, propertyName, checkInDate, checkOutDate, price);
+        if (rating.HasValue) option.UpdateRating(rating);
+        if (neighborhood != null) option.UpdateNeighborhood(neighborhood);
 
         _repository.Update(trip);
     }
@@ -541,7 +545,9 @@ public class TripService
                 l.IsSelected,
                 l.PropertyName,
                 l.CheckInDate,
-                l.CheckOutDate
+                l.CheckOutDate,
+                l.Rating,
+                l.Neighborhood
             ))
             .ToList();
     }
@@ -577,6 +583,28 @@ public class TripService
 
         var option = stay.GetLodgingOption(lodgingOptionId);
         option.UpdateUrl(newUrl);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateLodgingOptionRating(Guid stayId, Guid lodgingOptionId, decimal? rating)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.UpdateRating(rating);
+
+        _repository.Update(trip);
+    }
+
+    public void UpdateLodgingOptionNeighborhood(Guid stayId, Guid lodgingOptionId, string? neighborhood)
+    {
+        var trip = GetActiveTrip();
+        var stay = GetStay(stayId);
+
+        var option = stay.GetLodgingOption(lodgingOptionId);
+        option.UpdateNeighborhood(neighborhood);
 
         _repository.Update(trip);
     }

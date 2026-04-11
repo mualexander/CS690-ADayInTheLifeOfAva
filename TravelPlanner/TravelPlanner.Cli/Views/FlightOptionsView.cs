@@ -92,6 +92,7 @@ public class FlightOptionsView
     {
         var options = GetOptions();
         if (options.Count == 0) { AnsiConsole.MarkupLine("[yellow]No flight options.[/]"); Pause(); return null; }
+        if (options.Count == 1) return options[0];
         return AnsiConsole.Prompt(
             new SelectionPrompt<FlightOptionSummary>()
                 .Title(title)
@@ -120,9 +121,19 @@ public class FlightOptionsView
         var arrive = PromptDateTime("Arrive [grey](yyyy-MM-dd HH:mm)[/]:");
         if (!arrive.HasValue) return;
 
-        var price = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:");
+        var price    = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:");
+        var selected = AnsiConsole.Confirm("Mark as selected?", defaultValue: false);
 
-        try { _svc.AddFlightOptionToStay(_stay.Id, url, from, to, depart.Value, arrive.Value, price); }
+        try
+        {
+            _svc.AddFlightOptionToStay(_stay.Id, url, from, to, depart.Value, arrive.Value, price);
+            if (selected)
+            {
+                var id = _svc.GetFlightOptionsForStay(_stay.Id).Last().Id;
+                _svc.SelectFlightOption(_stay.Id, id);
+                BudgetWarning.ShowIfOverBudget(_svc);
+            }
+        }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
