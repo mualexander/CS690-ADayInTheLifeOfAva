@@ -188,4 +188,89 @@ public class LodgingOptionTests
         Assert.Equal(450m, option.Price);
         Assert.NotNull(option.LastCheckedAt);
     }
+
+    [Fact]
+    public void NewLodgingOption_RatingAndNeighborhood_AreNull()
+    {
+        var option = new LodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        Assert.Null(option.Rating);
+        Assert.Null(option.Neighborhood);
+    }
+
+    [Fact]
+    public void UpdateRating_SetsRating()
+    {
+        var option = new LodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        option.UpdateRating(4.5m);
+        Assert.Equal(4.5m, option.Rating);
+    }
+
+    [Fact]
+    public void UpdateRating_ClearsRatingWhenNull()
+    {
+        var option = new LodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        option.UpdateRating(3.0m);
+        option.UpdateRating(null);
+        Assert.Null(option.Rating);
+    }
+
+    [Theory]
+    [InlineData(-0.1)]
+    [InlineData(5.1)]
+    public void UpdateRating_RejectsOutOfRangeValue(double value)
+    {
+        var option = new LodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        Assert.Throws<ArgumentException>(() => option.UpdateRating((decimal)value));
+    }
+
+    [Fact]
+    public void UpdateNeighborhood_SetsNeighborhood()
+    {
+        var option = new LodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        option.UpdateNeighborhood("Shinjuku");
+        Assert.Equal("Shinjuku", option.Neighborhood);
+    }
+
+    [Fact]
+    public void UpdateNeighborhood_ClearsOnBlankOrNull()
+    {
+        var option = new LodgingOption(
+            "https://example.com/hotel",
+            "Budget Inn",
+            new DateTime(2026, 4, 10),
+            new DateTime(2026, 4, 14));
+
+        option.UpdateNeighborhood("Shinjuku");
+        option.UpdateNeighborhood("   ");
+        Assert.Null(option.Neighborhood);
+
+        option.UpdateNeighborhood("Shinjuku");
+        option.UpdateNeighborhood(null);
+        Assert.Null(option.Neighborhood);
+    }
 }

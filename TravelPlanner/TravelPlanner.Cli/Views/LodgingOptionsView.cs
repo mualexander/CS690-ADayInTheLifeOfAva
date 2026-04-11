@@ -24,19 +24,21 @@ public class LodgingOptionsView
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[grey]Action:[/]")
-                    .AddChoices("Add", "Update Price", "Update URL", "Select", "Deselect", "Delete", "Back"));
+                    .AddChoices("Add", "Update Price", "Update URL", "Update Rating", "Update Neighborhood", "Select", "Deselect", "Delete", "Back"));
 
             try
             {
                 switch (choice)
                 {
-                    case "Add":          OnAdd();            break;
-                    case "Update Price": OnUpdatePrice();    break;
-                    case "Update URL":   OnUpdateUrl();      break;
-                    case "Select":       OnMarkSelected();   break;
-                    case "Deselect":     OnMarkDeselected(); break;
-                    case "Delete":       OnDelete();         break;
-                    case "Back":         return;
+                    case "Add":                  OnAdd();                  break;
+                    case "Update Price":         OnUpdatePrice();          break;
+                    case "Update URL":           OnUpdateUrl();            break;
+                    case "Update Rating":        OnUpdateRating();         break;
+                    case "Update Neighborhood":  OnUpdateNeighborhood();   break;
+                    case "Select":               OnMarkSelected();         break;
+                    case "Deselect":             OnMarkDeselected();       break;
+                    case "Delete":               OnDelete();               break;
+                    case "Back":                 return;
                 }
             }
             catch (OperationCanceledException) { }
@@ -65,18 +67,24 @@ public class LodgingOptionsView
             .AddColumn("[bold]Check-in[/]")
             .AddColumn("[bold]Check-out[/]")
             .AddColumn(new TableColumn("[bold]Price[/]").RightAligned())
+            .AddColumn(new TableColumn("[bold]Rating[/]").RightAligned())
             .AddColumn("[bold]Link[/]")
             .AddColumn("[bold] [/]")
             .AddColumn("[bold]Checked At[/]");
         foreach (var l in options)
         {
-            var price = l.Price.HasValue ? $"[yellow]${l.Price.Value:0.00}[/]" : "[grey]?[/]";
-            var sel   = l.IsSelected ? "[green]✓[/]" : "";
+            var price    = l.Price.HasValue ? $"[yellow]${l.Price.Value:0.00}[/]" : "[grey]?[/]";
+            var rating   = l.Rating.HasValue ? $"{l.Rating.Value:0.0}" : "[grey]-[/]";
+            var sel      = l.IsSelected ? "[green]✓[/]" : "";
+            var property = string.IsNullOrWhiteSpace(l.Neighborhood)
+                ? Markup.Escape(l.PropertyName)
+                : $"[grey]{Markup.Escape(l.Neighborhood)}[/] · {Markup.Escape(l.PropertyName)}";
             table.AddRow(
-                Markup.Escape(l.PropertyName),
+                property,
                 l.CheckInDate.ToString("yyyy-MM-dd"),
                 l.CheckOutDate.ToString("yyyy-MM-dd"),
                 price,
+                rating,
                 LinkMarkup(l.Url),
                 sel,
                 l.LastCheckedAt?.ToString("yyyy-MM-dd HH:mm") ?? ""
@@ -91,6 +99,7 @@ public class LodgingOptionsView
     {
         var options = GetOptions();
         if (options.Count == 0) { AnsiConsole.MarkupLine("[yellow]No lodging options.[/]"); Pause(); return null; }
+        if (options.Count == 1) return options[0];
         return AnsiConsole.Prompt(
             new SelectionPrompt<LodgingOptionSummary>()
                 .Title(title)
@@ -117,9 +126,21 @@ public class LodgingOptionsView
         var checkOut = PromptDate("Check-out [grey](yyyy-MM-dd)[/]:");
         if (!checkOut.HasValue) return;
 
-        var price = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:");
+        var price        = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:");
+        var rating       = PromptOptionalDecimal("Rating [grey](0-5.0, blank = unknown)[/]:");
+        var neighborhood = ConsoleInput.AskOrEscape("Neighborhood [grey](blank to skip)[/]:");
+        var selected     = AnsiConsole.Confirm("Mark as selected?", defaultValue: false);
 
-        try { _svc.AddLodgingOptionToStay(_stay.Id, url, name, checkIn.Value, checkOut.Value, price); }
+        try
+        {
+            _svc.AddLodgingOptionToStay(_stay.Id, url, name, checkIn.Value, checkOut.Value, price, rating, neighborhood);
+            if (selected)
+            {
+                var id = _svc.GetLodgingOptionsForStay(_stay.Id).Last().Id;
+                _svc.SelectLodgingOption(_stay.Id, id);
+                BudgetWarning.ShowIfOverBudget(_svc);
+            }
+        }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
@@ -164,6 +185,26 @@ public class LodgingOptionsView
         var l = PickOption("Select lodging to deselect:");
         if (l is null) return;
         try { _svc.DeselectLodgingOption(_stay.Id, l.Id); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+    }
+
+    private void OnUpdateRating()
+    {
+        var l = PickOption("Select lodging to update rating:");
+        if (l is null) return;
+        var rating = PromptOptionalDecimal("Rating [grey](0-5.0, blank = clear)[/]:", l.Rating);
+        try { _svc.UpdateLodgingOptionRating(_stay.Id, l.Id, rating); }
+        catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
+    }
+
+    private void OnUpdateNeighborhood()
+    {
+        var l = PickOption("Select lodging to update neighborhood:");
+        if (l is null) return;
+        var current = l.Neighborhood ?? "";
+        var input = AnsiConsole.Prompt(
+            new TextPrompt<string>("Neighborhood [grey](blank to clear)[/]:").DefaultValue(current).AllowEmpty());
+        try { _svc.UpdateLodgingOptionNeighborhood(_stay.Id, l.Id, string.IsNullOrWhiteSpace(input) ? null : input); }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
