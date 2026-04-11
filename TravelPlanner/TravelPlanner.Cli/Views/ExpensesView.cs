@@ -27,15 +27,19 @@ public class ExpensesView
                     .Title("[grey]Action:[/]")
                     .AddChoices("Add", "Rename", "Update Amount", "Update Notes", "Delete", "Back"));
 
-            switch (choice)
+            try
             {
-                case "Add":           OnAdd();          break;
-                case "Rename":        OnRename();       break;
-                case "Update Amount": OnUpdateAmount(); break;
-                case "Update Notes":  OnUpdateNotes();  break;
-                case "Delete":        OnDelete();       break;
-                case "Back":          return;
+                switch (choice)
+                {
+                    case "Add":           OnAdd();          break;
+                    case "Rename":        OnRename();       break;
+                    case "Update Amount": OnUpdateAmount(); break;
+                    case "Update Notes":  OnUpdateNotes();  break;
+                    case "Delete":        OnDelete();       break;
+                    case "Back":          return;
+                }
             }
+            catch (OperationCanceledException) { }
         }
     }
 
@@ -93,16 +97,21 @@ public class ExpensesView
     private void OnAdd()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Expense[/]").RuleStyle("deepskyblue1"));
+        AnsiConsole.Write(new Rule("[bold deepskyblue1]Add Expense[/] [grey](Esc to cancel)[/]").RuleStyle("deepskyblue1"));
         AnsiConsole.WriteLine();
 
-        var name = AnsiConsole.Ask<string>("Name:");
+        var name = ConsoleInput.AskOrEscape("Name:");
         if (string.IsNullOrWhiteSpace(name)) return;
 
-        var amtStr = AnsiConsole.Ask<string>("Amount [grey](e.g. 25.50)[/]:");
-        if (!decimal.TryParse(amtStr, System.Globalization.NumberStyles.Number,
-                System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount < 0)
-        { AnsiConsole.MarkupLine("[red]Invalid amount.[/]"); Pause(); return; }
+        decimal amount;
+        while (true)
+        {
+            var amtStr = ConsoleInput.AskOrEscape("Amount [grey](e.g. 25.50)[/]:");
+            if (string.IsNullOrWhiteSpace(amtStr)) return;
+            if (decimal.TryParse(amtStr, System.Globalization.NumberStyles.Number,
+                    System.Globalization.CultureInfo.InvariantCulture, out amount) && amount >= 0) break;
+            AnsiConsole.MarkupLine("[red]Invalid amount.[/]");
+        }
 
         var category = AnsiConsole.Prompt(
             new SelectionPrompt<ExpenseCategory>()
@@ -110,8 +119,7 @@ public class ExpensesView
                 .UseConverter(c => c.ToString())
                 .AddChoices(Enum.GetValues<ExpenseCategory>()));
 
-        var notes = AnsiConsole.Prompt(
-            new TextPrompt<string>("Notes [grey](optional, blank to skip)[/]:").AllowEmpty());
+        var notes = ConsoleInput.AskOrEscape("Notes [grey](optional, blank to skip)[/]:");
 
         try
         {
