@@ -1165,6 +1165,89 @@ public class TripServiceTests
 
     #endregion
 
+    #region GetBudgetExportRows Tests
+
+    [Fact]
+    public void GetBudgetExportRows_IncludesAllExpensesAndSelectedTravelOptions()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddExpenseToStay(stayId, "Dinner", 80m, ExpenseCategory.Food);
+
+        svc.AddFlightOptionToStay(stayId, "https://example.com", "SFO", "NRT",
+            new DateTime(2026, 6, 1, 8, 0, 0), new DateTime(2026, 6, 2, 12, 0, 0), 600m);
+        var flightId = svc.GetFlightOptionsForStay(stayId).Single().Id;
+        svc.SelectFlightOption(stayId, flightId);
+
+        svc.AddLodgingOptionToStay(stayId, "https://example.com", "Hotel A",
+            new DateTime(2026, 6, 1), new DateTime(2026, 6, 5), 400m);
+        var lodgingId = svc.GetLodgingOptionsForStay(stayId).Single().Id;
+        svc.SelectLodgingOption(stayId, lodgingId);
+
+        var rows = svc.GetBudgetExportRows();
+
+        Assert.Equal(3, rows.Count);
+        Assert.Contains(rows, r => r.Type == "Expense" && r.Name == "Dinner"     && r.Amount == 80m);
+        Assert.Contains(rows, r => r.Type == "Flight"  && r.Name == "SFO -> NRT" && r.Amount == 600m);
+        Assert.Contains(rows, r => r.Type == "Lodging" && r.Name == "Hotel A"    && r.Amount == 400m);
+        Assert.All(rows, r => Assert.StartsWith("Tokyo", r.Stay));
+        Assert.All(rows, r => Assert.Equal("Idea", r.Status));
+    }
+
+    [Fact]
+    public void GetBudgetExportRows_ExcludesUnselectedTravelOptions()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 5000m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(stayId, "https://example.com", "SFO", "NRT",
+            new DateTime(2026, 6, 1, 8, 0, 0), new DateTime(2026, 6, 2, 12, 0, 0), 600m);
+        // flight not selected
+
+        svc.AddLodgingOptionToStay(stayId, "https://example.com", "Hotel A",
+            new DateTime(2026, 6, 1), new DateTime(2026, 6, 5), 400m);
+        // lodging not selected
+
+        var rows = svc.GetBudgetExportRows();
+
+        Assert.Empty(rows);
+    }
+
+    [Fact]
+    public void GetBudgetExportRows_LocationFormattedAsCityCommaCountry()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Osaka", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+        svc.AddExpenseToStay(stayId, "Ramen", 15m, ExpenseCategory.Food);
+
+        var rows = svc.GetBudgetExportRows();
+
+        Assert.Single(rows);
+        Assert.StartsWith("Osaka", rows[0].Stay);
+        Assert.Equal("Idea", rows[0].Status);
+    }
+
+    #endregion
+
     #region LodgingOption Rating and Neighborhood Tests
 
     [Fact]

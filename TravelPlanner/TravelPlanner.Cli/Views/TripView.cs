@@ -25,7 +25,7 @@ public class TripView
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[grey]Action:[/]")
-                    .AddChoices("Add Stay", "Open Stay", "Set Status", "Delete Stay", "Update Budget", "Toggle Over-Budget Warning", "Archive Trip", "Back"));
+                    .AddChoices("Add Stay", "Open Stay", "Set Status", "Delete Stay", "Update Budget", "Toggle Over-Budget Warning", "Export Budget Summary", "Archive Trip", "Back"));
 
             try
             {
@@ -37,6 +37,7 @@ public class TripView
                     case "Delete Stay":                OnDeleteStay();                   break;
                     case "Update Budget":              OnUpdateBudget();                 break;
                     case "Toggle Over-Budget Warning": OnToggleWarnOnOverBudget();       break;
+                    case "Export Budget Summary":      OnExportBudgetSummary();          break;
                     case "Archive Trip":               if (OnArchive()) return;          break;
                     case "Back":                       return;
                 }
@@ -210,6 +211,47 @@ public class TripView
         StayStatus.Locked    => "[green]Locked[/]",
         _                    => status.ToString()
     };
+
+    private void OnExportBudgetSummary()
+    {
+        var fileName = ConsoleInput.AskOrEscape("CSV file name [grey](e.g. budget.csv)[/]:");
+        if (string.IsNullOrWhiteSpace(fileName)) return;
+
+        if (!fileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            fileName += ".csv";
+
+        try
+        {
+            var rows = _svc.GetBudgetExportRows();
+            var lines = new List<string>
+            {
+                "Status,Stay,Type,Name,Amount"
+            };
+            foreach (var r in rows)
+            {
+                lines.Add(string.Join(",",
+                    CsvEscape(r.Status),
+                    CsvEscape(r.Stay),
+                    CsvEscape(r.Type),
+                    CsvEscape(r.Name),
+                    r.Amount.HasValue ? r.Amount.Value.ToString("0.00") : ""));
+            }
+            File.WriteAllLines(fileName, lines, System.Text.Encoding.UTF8);
+            AnsiConsole.MarkupLine($"[green]Exported {rows.Count} rows to [bold]{Markup.Escape(fileName)}[/][/]");
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]");
+        }
+        Pause();
+    }
+
+    private static string CsvEscape(string value)
+    {
+        if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+            return $"\"{value.Replace("\"", "\"\"")}\"";
+        return value;
+    }
 
     private static DateTime? PromptDate(string prompt)
     {
