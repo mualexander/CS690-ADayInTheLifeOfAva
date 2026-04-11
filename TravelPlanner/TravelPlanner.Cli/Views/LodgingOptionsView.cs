@@ -60,6 +60,9 @@ public class LodgingOptionsView
             return;
         }
 
+        var budget    = _svc.GetTripBudget();
+        var remaining = _svc.GetTripRemainingBudget();
+
         var table = new Table()
             .Border(TableBorder.Rounded)
             .BorderColor(Color.Grey)
@@ -73,7 +76,10 @@ public class LodgingOptionsView
             .AddColumn("[bold]Checked At[/]");
         foreach (var l in options)
         {
-            var price    = l.Price.HasValue ? $"[yellow]${l.Price.Value:0.00}[/]" : "[grey]?[/]";
+            var overBudget = budget > 0 && !l.IsSelected && l.Price.HasValue && l.Price.Value > remaining;
+            var price    = l.Price.HasValue
+                ? (overBudget ? $"[red]${l.Price.Value:0.00}[/]" : $"[yellow]${l.Price.Value:0.00}[/]")
+                : "[grey]?[/]";
             var rating   = l.Rating.HasValue ? $"{l.Rating.Value:0.0}" : "[grey]-[/]";
             var sel      = l.IsSelected ? "[green]✓[/]" : "";
             var property = string.IsNullOrWhiteSpace(l.Neighborhood)

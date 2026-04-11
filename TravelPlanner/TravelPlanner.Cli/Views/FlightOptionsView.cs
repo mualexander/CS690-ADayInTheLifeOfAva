@@ -58,6 +58,9 @@ public class FlightOptionsView
             return;
         }
 
+        var budget    = _svc.GetTripBudget();
+        var remaining = _svc.GetTripRemainingBudget();
+
         var table = new Table()
             .Border(TableBorder.Rounded)
             .BorderColor(Color.Grey)
@@ -71,7 +74,10 @@ public class FlightOptionsView
 
         foreach (var f in options)
         {
-            var price = f.Price.HasValue ? $"[yellow]${f.Price.Value:0.00}[/]" : "[grey]?[/]";
+            var overBudget = budget > 0 && !f.IsSelected && f.Price.HasValue && f.Price.Value > remaining;
+            var price = f.Price.HasValue
+                ? (overBudget ? $"[red]${f.Price.Value:0.00}[/]" : $"[yellow]${f.Price.Value:0.00}[/]")
+                : "[grey]?[/]";
             var sel   = f.IsSelected ? "[green]✓[/]" : "";
             table.AddRow(
                 $"{Markup.Escape(f.FromAirportCode)} → {Markup.Escape(f.ToAirportCode)}",
