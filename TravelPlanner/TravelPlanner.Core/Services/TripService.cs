@@ -103,6 +103,11 @@ public class TripService
         return trip.RemainingBudget();
     }
 
+    public decimal GetTripBudget()
+    {
+        return GetActiveTrip().TotalBudget;
+    }
+
     public IReadOnlyList<CostItemSummary> GetTopCostItems(int count)
     {
         var trip = GetActiveTrip();
