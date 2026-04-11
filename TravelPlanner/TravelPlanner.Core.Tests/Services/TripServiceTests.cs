@@ -1165,6 +1165,83 @@ public class TripServiceTests
 
     #endregion
 
+    #region Trip Settings Tests
+
+    [Fact]
+    public void CreateTrip_WithOptionalSettings_PersistsThem()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        var trip = svc.CreateTrip("Trip", 5000m,
+            homeAirportCode: "sfo", defaultCurrency: "jpy", travelerCount: 2);
+
+        Assert.Equal("SFO", trip.HomeAirportCode);
+        Assert.Equal("JPY", trip.DefaultCurrency);
+        Assert.Equal(2, trip.TravelerCount);
+    }
+
+    [Fact]
+    public void SetTripHomeAirportCode_UpdatesAndPersists()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+
+        svc.SetTripHomeAirportCode("lax");
+
+        Assert.Equal("LAX", ctx.ActiveTrip!.HomeAirportCode);
+    }
+
+    [Fact]
+    public void SetTripDefaultCurrency_UpdatesAndPersists()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+
+        svc.SetTripDefaultCurrency("eur");
+
+        Assert.Equal("EUR", ctx.ActiveTrip!.DefaultCurrency);
+    }
+
+    [Fact]
+    public void SetTripTravelerCount_UpdatesAndPersists()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+
+        svc.SetTripTravelerCount(4);
+
+        Assert.Equal(4, ctx.ActiveTrip!.TravelerCount);
+    }
+
+    [Fact]
+    public void GetTripHomeAirportCode_ReturnsNullWhenNotSet()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 0m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+
+        Assert.Null(svc.GetTripHomeAirportCode());
+    }
+
+    #endregion
+
     #region GetBudgetExportRows Tests
 
     [Fact]

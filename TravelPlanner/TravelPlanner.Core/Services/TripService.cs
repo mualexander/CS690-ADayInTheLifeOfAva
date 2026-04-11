@@ -17,14 +17,17 @@ public class TripService
         _context = context;
     }
 
-    public Trip CreateTrip(string name, decimal budget)
+    public Trip CreateTrip(string name, decimal budget,
+        string? homeAirportCode = null, string? defaultCurrency = null, int? travelerCount = null)
     {
-        var trip = new Trip(name, budget);
-
         if (_repository.GetAll().Any(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase)))
-        {
             throw new InvalidOperationException("Trip with that name already exists.");
-        }
+
+        var trip = new Trip(name, budget);
+        if (homeAirportCode != null) trip.SetHomeAirportCode(homeAirportCode);
+        if (defaultCurrency != null) trip.SetDefaultCurrency(defaultCurrency);
+        if (travelerCount.HasValue) trip.SetTravelerCount(travelerCount);
+
         _repository.Add(trip);
         return trip;
     }
@@ -166,6 +169,29 @@ public class TripService
     {
         var trip = GetActiveTrip();
         trip.SetWarnOnOverBudget(warn);
+        _repository.Update(trip);
+    }
+
+    public string? GetTripHomeAirportCode() => GetActiveTrip().HomeAirportCode;
+
+    public void SetTripHomeAirportCode(string? code)
+    {
+        var trip = GetActiveTrip();
+        trip.SetHomeAirportCode(code);
+        _repository.Update(trip);
+    }
+
+    public void SetTripDefaultCurrency(string currency)
+    {
+        var trip = GetActiveTrip();
+        trip.SetDefaultCurrency(currency);
+        _repository.Update(trip);
+    }
+
+    public void SetTripTravelerCount(int? count)
+    {
+        var trip = GetActiveTrip();
+        trip.SetTravelerCount(count);
         _repository.Update(trip);
     }
 

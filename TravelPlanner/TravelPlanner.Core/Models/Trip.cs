@@ -12,6 +12,9 @@ public class Trip
     public DateTime CreatedAt { get; internal set; }
     public bool IsArchived { get; private set; }
     public bool WarnOnOverBudget { get; private set; }
+    public string? HomeAirportCode { get; private set; }
+    public string DefaultCurrency { get; private set; } = "USD";
+    public int? TravelerCount { get; private set; }
 
     private readonly List<Stay> _stays = new();
     public IReadOnlyCollection<Stay> Stays => _stays.AsReadOnly();
@@ -52,6 +55,28 @@ public class Trip
     {
         EnsureNotArchived();
         WarnOnOverBudget = warn;
+    }
+
+    public void SetHomeAirportCode(string? code)
+    {
+        EnsureNotArchived();
+        HomeAirportCode = string.IsNullOrWhiteSpace(code) ? null : code.Trim().ToUpperInvariant();
+    }
+
+    public void SetDefaultCurrency(string currency)
+    {
+        EnsureNotArchived();
+        if (string.IsNullOrWhiteSpace(currency))
+            throw new ArgumentException("Currency cannot be empty.", nameof(currency));
+        DefaultCurrency = currency.Trim().ToUpperInvariant();
+    }
+
+    public void SetTravelerCount(int? count)
+    {
+        EnsureNotArchived();
+        if (count.HasValue && count.Value < 1)
+            throw new ArgumentException("Traveler count must be at least 1.", nameof(count));
+        TravelerCount = count;
     }
 
     // Route A: no uniqueness constraints. Add as many Tokyo stays as you want.
@@ -97,12 +122,16 @@ public class Trip
 
     public decimal RemainingBudget() => TotalBudget - TotalPlannedCost();
 
-    internal static Trip Hydrate(Guid id, string name, decimal totalBudget, DateTime createdAt, bool warnOnOverBudget)
+    internal static Trip Hydrate(Guid id, string name, decimal totalBudget, DateTime createdAt, bool warnOnOverBudget,
+        string? homeAirportCode = null, string? defaultCurrency = null, int? travelerCount = null)
     {
         var trip = new Trip(name, totalBudget);
         trip.Id = id;
         trip.CreatedAt = createdAt;
         trip.WarnOnOverBudget = warnOnOverBudget;
+        trip.HomeAirportCode = string.IsNullOrWhiteSpace(homeAirportCode) ? null : homeAirportCode.Trim().ToUpperInvariant();
+        trip.DefaultCurrency = string.IsNullOrWhiteSpace(defaultCurrency) ? "USD" : defaultCurrency.Trim().ToUpperInvariant();
+        trip.TravelerCount = travelerCount;
         return trip;
     }
 

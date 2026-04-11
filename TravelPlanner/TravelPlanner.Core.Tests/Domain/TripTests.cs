@@ -184,4 +184,81 @@ public class TripTests
         Assert.Equal(600m, trip.TotalPlannedCost());
         Assert.Equal(4400m, trip.RemainingBudget());
     }
+
+    [Fact]
+    public void NewTrip_DefaultCurrency_IsUSD()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        Assert.Equal("USD", trip.DefaultCurrency);
+    }
+
+    [Fact]
+    public void NewTrip_HomeAirportCodeAndTravelerCount_AreNull()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        Assert.Null(trip.HomeAirportCode);
+        Assert.Null(trip.TravelerCount);
+    }
+
+    [Fact]
+    public void SetHomeAirportCode_NormalizesToUppercase()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        trip.SetHomeAirportCode("sfo");
+        Assert.Equal("SFO", trip.HomeAirportCode);
+    }
+
+    [Fact]
+    public void SetHomeAirportCode_ClearsOnBlankOrNull()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        trip.SetHomeAirportCode("SFO");
+        trip.SetHomeAirportCode("   ");
+        Assert.Null(trip.HomeAirportCode);
+
+        trip.SetHomeAirportCode("SFO");
+        trip.SetHomeAirportCode(null);
+        Assert.Null(trip.HomeAirportCode);
+    }
+
+    [Fact]
+    public void SetDefaultCurrency_NormalizesToUppercase()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        trip.SetDefaultCurrency("jpy");
+        Assert.Equal("JPY", trip.DefaultCurrency);
+    }
+
+    [Fact]
+    public void SetDefaultCurrency_ThrowsOnEmpty()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        Assert.Throws<ArgumentException>(() => trip.SetDefaultCurrency(""));
+        Assert.Throws<ArgumentException>(() => trip.SetDefaultCurrency("   "));
+    }
+
+    [Fact]
+    public void SetTravelerCount_StoresValue()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        trip.SetTravelerCount(3);
+        Assert.Equal(3, trip.TravelerCount);
+    }
+
+    [Fact]
+    public void SetTravelerCount_ClearsOnNull()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        trip.SetTravelerCount(3);
+        trip.SetTravelerCount(null);
+        Assert.Null(trip.TravelerCount);
+    }
+
+    [Fact]
+    public void SetTravelerCount_ThrowsOnZeroOrNegative()
+    {
+        var trip = new Trip("Japan 2026", 5000m);
+        Assert.Throws<ArgumentException>(() => trip.SetTravelerCount(0));
+        Assert.Throws<ArgumentException>(() => trip.SetTravelerCount(-1));
+    }
 }

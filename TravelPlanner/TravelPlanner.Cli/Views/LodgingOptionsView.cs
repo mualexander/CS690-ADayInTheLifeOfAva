@@ -127,9 +127,9 @@ public class LodgingOptionsView
         var name = ConsoleInput.AskOrEscape("Property name:");
         if (string.IsNullOrWhiteSpace(name)) return;
 
-        var checkIn  = PromptDate("Check-in [grey](yyyy-MM-dd)[/]:");
+        var checkIn  = PromptDate("Check-in [grey](yyyy-MM-dd)[/]:", _stay.StartDate);
         if (!checkIn.HasValue) return;
-        var checkOut = PromptDate("Check-out [grey](yyyy-MM-dd)[/]:");
+        var checkOut = PromptDate("Check-out [grey](yyyy-MM-dd)[/]:", _stay.EndDate);
         if (!checkOut.HasValue) return;
 
         var price        = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:");
@@ -223,11 +223,12 @@ public class LodgingOptionsView
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 
-    private static DateTime? PromptDate(string prompt)
+    private static DateTime? PromptDate(string prompt, DateTime? defaultDate = null)
     {
+        var defaultStr = defaultDate?.ToString("yyyy-MM-dd");
         while (true)
         {
-            var input = ConsoleInput.AskOrEscape(prompt);
+            var input = ConsoleInput.AskOrEscape(prompt, defaultStr);
             if (string.IsNullOrWhiteSpace(input)) return null;
             if (DateTime.TryParse(input, out var d)) return d;
             AnsiConsole.MarkupLine("[red]Use yyyy-MM-dd format.[/]");
