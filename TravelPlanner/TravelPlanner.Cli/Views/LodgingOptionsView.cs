@@ -128,7 +128,12 @@ public class LodgingOptionsView
         var l = PickOption("Select lodging to update price:");
         if (l is null) return;
         var price = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:", l.Price);
-        try { _svc.UpdateLodgingOptionPrice(_stay.Id, l.Id, price); }
+        try
+        {
+            _svc.UpdateLodgingOptionPrice(_stay.Id, l.Id, price);
+            if (l.IsSelected)
+                BudgetWarning.ShowIfOverBudget(_svc);
+        }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 

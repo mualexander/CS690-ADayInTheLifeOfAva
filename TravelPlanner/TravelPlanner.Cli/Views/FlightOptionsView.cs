@@ -131,7 +131,12 @@ public class FlightOptionsView
         var f = PickOption("Select flight to update price:");
         if (f is null) return;
         var price = PromptOptionalDecimal("Price [grey](blank = unknown)[/]:", f.Price);
-        try { _svc.UpdateFlightOptionPrice(_stay.Id, f.Id, price); }
+        try
+        {
+            _svc.UpdateFlightOptionPrice(_stay.Id, f.Id, price);
+            if (f.IsSelected)
+                BudgetWarning.ShowIfOverBudget(_svc);
+        }
         catch (Exception ex) { AnsiConsole.MarkupLine($"[red]{Markup.Escape(ex.Message)}[/]"); Pause(); }
     }
 

@@ -1164,4 +1164,100 @@ public class TripServiceTests
     }
 
     #endregion
+
+    #region IsOverBudget After Price Update Tests
+
+    [Fact]
+    public void IsOverBudget_ReturnsTrueAfterSelectedFlightPriceIncreasedPastBudget()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 500m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(stayId, "https://example.com", "SFO", "NRT",
+            new DateTime(2026, 6, 1, 8, 0, 0), new DateTime(2026, 6, 2, 12, 0, 0), 400m);
+        var flightId = svc.GetFlightOptionsForStay(stayId).Single().Id;
+        svc.SelectFlightOption(stayId, flightId);
+
+        Assert.False(svc.IsOverBudget());
+
+        svc.UpdateFlightOptionPrice(stayId, flightId, 600m);
+
+        Assert.True(svc.IsOverBudget());
+    }
+
+    [Fact]
+    public void IsOverBudget_ReturnsFalseAfterUnselectedFlightPriceIncreasedPastBudget()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 500m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddFlightOptionToStay(stayId, "https://example.com", "SFO", "NRT",
+            new DateTime(2026, 6, 1, 8, 0, 0), new DateTime(2026, 6, 2, 12, 0, 0), 400m);
+        var flightId = svc.GetFlightOptionsForStay(stayId).Single().Id;
+        // deliberately not selected
+
+        svc.UpdateFlightOptionPrice(stayId, flightId, 600m);
+
+        Assert.False(svc.IsOverBudget());
+    }
+
+    [Fact]
+    public void IsOverBudget_ReturnsTrueAfterSelectedLodgingPriceIncreasedPastBudget()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 500m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddLodgingOptionToStay(stayId, "https://example.com", "Hotel A",
+            new DateTime(2026, 6, 1), new DateTime(2026, 6, 5), 400m);
+        var lodgingId = svc.GetLodgingOptionsForStay(stayId).Single().Id;
+        svc.SelectLodgingOption(stayId, lodgingId);
+
+        Assert.False(svc.IsOverBudget());
+
+        svc.UpdateLodgingOptionPrice(stayId, lodgingId, 600m);
+
+        Assert.True(svc.IsOverBudget());
+    }
+
+    [Fact]
+    public void IsOverBudget_ReturnsFalseAfterUnselectedLodgingPriceIncreasedPastBudget()
+    {
+        var repo = new InMemoryTripRepository();
+        var ctx = new InMemoryTripContext(repo);
+        var svc = new TripService(repo, ctx);
+
+        svc.CreateTrip("Trip", 500m);
+        svc.SelectTrip(svc.GetTrips().Single().Id);
+        svc.AddStay("Tokyo", "Japan");
+        var stayId = svc.GetStays().Single().Id;
+
+        svc.AddLodgingOptionToStay(stayId, "https://example.com", "Hotel A",
+            new DateTime(2026, 6, 1), new DateTime(2026, 6, 5), 400m);
+        var lodgingId = svc.GetLodgingOptionsForStay(stayId).Single().Id;
+        // deliberately not selected
+
+        svc.UpdateLodgingOptionPrice(stayId, lodgingId, 600m);
+
+        Assert.False(svc.IsOverBudget());
+    }
+
+    #endregion
 }
